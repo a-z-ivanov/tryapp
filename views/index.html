@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Canvas Hexagonal Map</title>
+        <link rel="stylesheet" type="text/css" href="../styles.css">
+    </head>
+    <body>
+        <div id="loading">
+            <img id="loading-image" src="../images/loading.gif" alt="Loading..." />
+        </div>
+
+        <div class="mapcontainer">
+            <canvas id="hexmap" width="660" height="624"></canvas>
+        </div>
+
+        <script src="../js/hexagons.js"></script>
+        <script src="../js/jquery-1.11.3.js"></script>
+        <script language="javascript">
+            var aImages = [];
+            function loadSprite(src) {
+                var deferred = jQuery.Deferred();
+                var sprite = new Image();
+                sprite.onload = function() {
+                    console.log(src + " loaded.");
+                    deferred.resolve();
+                };
+                sprite.src = src;
+                aImages.push(sprite);
+                return deferred.promise();
+            }
+
+            var loaders = [];
+            //todo: get all possible hexagons, their initial coordinates and their related images
+            loaders.push(loadSprite('../images/image1.png'));
+            loaders.push(loadSprite('../images/image2.png'));
+            loaders.push(loadSprite('../images/image3.png'));
+            loaders.push(loadSprite('../images/image4.png'));
+            jQuery.when.apply(null, loaders).done(function() {
+                console.log("All images loaded. Drawing in the canvas now...");
+                fnDrawAll(aImages);
+                jQuery('#loading').hide();
+            });
+        </script>
+    </body>
+</html>
