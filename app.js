@@ -2,16 +2,15 @@
 
 const express = require('express'),
     app = express(),
-    path = require('path');
+    path = require('path'),
+    router = require('./routes/router.js');
 
 app.set('views', path.join(__dirname, 'views'));
 app.engine('html', require('hogan-express'));
 app.set('view engine', 'html');
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.route('/').get(function(req, res, next) {
-    res.render('index');
-});
+router(express, app);
 
 app.listen(process.env.PORT || 5000, function() {
     console.log('server running on port ' + (process.env.PORT || 5000));
