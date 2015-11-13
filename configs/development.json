@@ -1,0 +1,4 @@
+{
+  "dbURL": "mongodb://tryapp:tryapp@ds047524.mongolab.com:47524/mkdb",
+  "sessionSecret": "asdfasdfSASDASDASDLKJ123ASDLkasd"
+}
