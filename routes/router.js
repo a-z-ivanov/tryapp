@@ -6,7 +6,7 @@ module.exports = function(express, app) {
     });
 
     router.get('/setcolor', function(req, res, next) {
-        req.session.favColor = "Red";
+        req.session.favColor = process.env.NODE_ENV === 'production' ? "Green" : "Red";
         res.send('Setting favourite colour !');
     });
 
