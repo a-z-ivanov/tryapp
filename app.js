@@ -1,37 +1,77 @@
-'use strict';
+var express = require('express');
+var expressSession = require('express-session');
+var ConnectMongo = require('connect-mongo')(expressSession);
+var path = require('path');
+var favicon = require('static-favicon');
+var logger = require('morgan');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 
-const express = require('express'),
-    app = express(),
-    path = require('path'),
-    router = require('./routes/router.js'),
-    cookieParser = require('cookie-parser'),
-    session = require('express-session'),
-    config = require('./configs/config.js'),
-    ConnectMongo = require('connect-mongo')(session);
+var config = require('./configs/config.js');
+var mongoose = require('mongoose');
 
+// Connect to DB
+mongoose.connect(config.dbURL);
+
+var app = express();
+
+// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.engine('html', require('hogan-express'));
 app.set('view engine', 'html');
-app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(favicon());
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+//init sessions
+//app.use(expressSession({secret: config.sessionSecret}));
 
 var env = process.env.NODE_ENV || 'development';
-if (env === 'development') {
-    //development
-    app.use(session({ secret: config.sessionSecret }));
+if(env === 'development'){
+    // dev specific settings
+    app.use(expressSession({secret:config.sessionSecret}));
 } else {
-    app.use(session({
-        secret: config.sessionSecret,
+    // production specific settings
+    app.use(expressSession({
+        secret:config.sessionSecret,
         store: new ConnectMongo({
-            url: config.dbURL,
-            stringify: true
+            db: config.dbURL,
+            mongooseConnection:mongoose.connections[0],
+            stringify:true
         })
     }));
 }
 
-router(express, app);
+// Configuring Passport
+var passport = require('passport');
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.listen(process.env.PORT || 5000, function() {
-    console.log('server running on port ' + (process.env.PORT || 5000));
+// Using the flash middleware provided by connect-flash to store messages in session
+// and displaying in templates
+var flash = require('connect-flash');
+app.use(flash());
+
+// Initialize Passport
+var initPassport = require('./auth/init');
+initPassport(passport);
+
+var routes = require('./routes/router')(passport);
+app.use('/', routes);
+
+/// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
+
+app.set('port', process.env.PORT || 5000);
+app.listen(app.get('port'), function() {
+    console.log('server running on port ' + app.get('port'));
     console.log("Mode:", env);
 });
