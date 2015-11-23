@@ -9,7 +9,7 @@ function securePages(req, res, next){
     }
 }
 
-module.exports = function(passport){
+module.exports = function(passport, config){
 
     /* GET login page. */
     router.get('/', function(req, res) {
@@ -38,7 +38,7 @@ module.exports = function(passport){
 
     /* GET Home Page */
     router.get('/home', securePages, function(req, res){
-        res.render('home', { user: req.user });
+        res.render('home', { user: req.user, host: config.host });
     });
 
     /* Handle Logout */

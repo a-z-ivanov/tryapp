@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <link rel="stylesheet" type="text/css" href="../styles.css">
+        <script src="/socket.io/socket.io.js"></script>
     </head>
     <body>
         <div id="loading">
@@ -13,9 +14,39 @@
             <canvas id="hexmap" width="660" height="624"></canvas>
         </div>
 
+        <div>
+            <ul class="gamesList">
+            </ul>
+            <button id="btnNewGame">New Game</button>
+        </div>
+
         <script src="../js/hexagons.js"></script>
         <script src="../js/jquery-1.11.3.js"></script>
         <script language="javascript">
+            //socket.io
+            var host = '{{host}}';
+            var socket = io.connect(host + "/gamelist");
+
+            socket.on('connect', function() {
+                console.log('Conncetion Established !');
+            });
+
+            socket.on('gameroomupdate', function(data) {
+                var games = JSON.parse(data);
+
+                $('.gamesList').html('');
+                for(var i = 0; i < games.length; i++) {
+                    var sLI = "<li>Game: " + games[i].game_number + "</li>";
+                    $('.gamesList').append(sLI);
+                }
+            });
+
+            $(document).on('click', '#btnNewGame', function() {
+               socket.emit('newgame', { username: '{{user.username}}' });
+            });
+
+            //////////////
+
             var aImages = [];
             function loadSprite(src) {
                 var deferred = jQuery.Deferred();

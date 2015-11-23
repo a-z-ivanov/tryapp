@@ -10,6 +10,12 @@ var bodyParser = require('body-parser');
 var config = require('./configs/config.js');
 var mongoose = require('mongoose');
 
+var games = [
+    //{
+    //    game_number:123451234
+    //}
+];
+
 // Connect to DB
 mongoose.connect(config.dbURL);
 
@@ -60,7 +66,7 @@ app.use(flash());
 var initPassport = require('./auth/init');
 initPassport(passport);
 
-var routes = require('./routes/router')(passport);
+var routes = require('./routes/router')(passport, config);
 app.use('/', routes);
 
 /// catch 404 and forward to error handler
@@ -71,7 +77,13 @@ app.use(function(req, res, next) {
 });
 
 app.set('port', process.env.PORT || 5000);
-app.listen(app.get('port'), function() {
+
+var server = require('http').createServer(app);
+var io = require('socket.io').listen(server);
+
+require('./socket/socket.js')(io, games);
+
+server.listen(app.get('port'), function() {
     console.log('server running on port ' + app.get('port'));
     console.log("Mode:", env);
 });
