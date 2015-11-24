@@ -1,4 +1,4 @@
-function fnDrawAll(aImages){
+function fnDrawAll(aImages, oMap){
     var canvas = document.getElementById('hexmap');
 
     var hexHeight,
@@ -12,7 +12,11 @@ function fnDrawAll(aImages){
         strokeStyleRegular = "#CCCCCC",
         strokeStyleMarked = "#00CC00",
         imageHeight = 32,
-        imageWidth = 32;
+        imageWidth = 32,
+        iCurrentTile = 0,
+        aTileCenters = getCenters(),
+        aAllMapSquares = getAllSquares(),
+        aRevealedSquares = getRevealedSquares();
 
     hexHeight = Math.sin(hexagonAngle) * sideLength;
     hexRadius = Math.cos(hexagonAngle) * sideLength;
@@ -24,8 +28,9 @@ function fnDrawAll(aImages){
 
         ctx.fillStyle = "#000000";
         ctx.strokeStyle = strokeStyleRegular;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         drawBoard(ctx, boardWidth, boardHeight);
 
         canvas.addEventListener("mousedown", function(eventInfo) {
@@ -46,7 +51,9 @@ function fnDrawAll(aImages){
             screenX = hexX * hexRectangleWidth + ((hexY % 2) * hexRadius);
             screenY = hexY * (hexHeight + sideLength);
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             drawBoard(ctx, boardWidth, boardHeight);
 
@@ -64,24 +71,44 @@ function fnDrawAll(aImages){
         var i,
             j;
 
-        var imageId = 0;
+        iCurrentTile = 0;
 
         for(i = 0; i < width; ++i) {
             for(j = 0; j < height; ++j) {
-                drawHexagon(
-                    ctx, 
-                    i * hexRectangleWidth + ((j % 2) * hexRadius), 
-                    j * (sideLength + hexHeight), 
-                    false,
-                    imageId
-                );
-                imageId++;
+                if (isOutside(i, j)) {
+                    drawBlackHexagon(ctx,
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight),
+                        false
+                    );
+                } else if (!isRevealed(i, j)) {
+                    drawBlackHexagon(ctx,
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight),
+                        true
+                    );
+                }
+
+                if (!isOutside(i, j) && (oMap && !isRevealed(i, j))) {
+                    drawHexagon(
+                        ctx,
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight),
+                        false
+                    );
+                }
+
+                if (isCenter(i, j)) {
+                    drawTile(aImages[4 + iCurrentTile++],
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight));
+                }
             }
         }
     }
 
-    function drawHexagon(canvasContext, x, y, fill, imageId) {
-        var fill = fill || false;
+    function drawHexagon(canvasContext, x, y, stroke) {
+        var stroke = stroke || false;
 
         canvasContext.beginPath();
         canvasContext.moveTo(x + hexRadius, y);
@@ -92,26 +119,102 @@ function fnDrawAll(aImages){
         canvasContext.lineTo(x, y + hexHeight);
         canvasContext.closePath();
 
-        if(fill) {
+        if(stroke) {
             ctx.strokeStyle = strokeStyleMarked;
             ctx.lineWidth = 3;
-            //canvasContext.fill();
             canvasContext.stroke();
         } else {
             ctx.strokeStyle = strokeStyleRegular;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 2;
             canvasContext.stroke();
-            drawImage(aImages[imageId%4], canvasContext, x, y);
         }
     }
 
-    function drawImage(img, canvasContext, x, y, fill) {
+    function drawBlackHexagon(canvasContext, x, y, stroke) {
+        canvasContext.beginPath();
+        canvasContext.moveTo(x + hexRadius, y);
+        canvasContext.lineTo(x + hexRectangleWidth, y + hexHeight);
+        canvasContext.lineTo(x + hexRectangleWidth, y + hexHeight + sideLength);
+        canvasContext.lineTo(x + hexRadius, y + hexRectangleHeight);
+        canvasContext.lineTo(x, y + sideLength + hexHeight);
+        canvasContext.lineTo(x, y + hexHeight);
+        canvasContext.closePath();
+
+        ctx.fillStyle = "#000000";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        canvasContext.fill();
+
+        if (stroke) {
+            ctx.strokeStyle = strokeStyleRegular;
+            ctx.lineWidth = 2;
+            canvasContext.stroke();
+        }
+    }
+
+    function drawImage(img, x, y) {
         ctx.drawImage(img, x + (hexRectangleWidth-imageWidth)/2, y + (hexRectangleHeight - imageHeight)/2);
-        //ctx.beginPath();
-        //ctx.moveTo(30,96);
-        //ctx.lineTo(70,66);
-        //ctx.lineTo(103,76);
-        //ctx.lineTo(170,15);
-        //ctx.stroke();
+    }
+
+    function drawTile(tile, x, y) {
+        ctx.drawImage(tile, x - hexRectangleWidth, y - 0.75*hexRectangleHeight, 3*hexRectangleWidth, 2.5*hexRectangleHeight);
+    }
+
+    function getCenters() {
+        var aResult = [];
+
+        if (oMap) {
+            for (var i = 0; i < oMap.groups.length; i++) {
+                for (var j = 0; j < oMap.groups[i].squares.length; j++) {
+                    if (oMap.groups[i].revealed && oMap.groups[i].squares[j].center) {
+                        aResult.push(oMap.groups[i].squares[j].id);
+                    }
+                }
+            }
+        }
+
+        return aResult;
+    }
+
+    function getRevealedSquares() {
+        var aResult = [];
+
+        if (oMap) {
+            for (var i = 0; i < oMap.groups.length; i++) {
+                for (var j = 0; j < oMap.groups[i].squares.length; j++) {
+                    if (oMap.groups[i].revealed) {
+                        aResult.push(oMap.groups[i].squares[j].id);
+                    }
+                }
+            }
+        }
+
+        return aResult;
+    }
+
+    function getAllSquares() {
+        var aResult = [];
+
+        if (oMap) {
+            for (var i = 0; i < oMap.groups.length; i++) {
+                for (var j = 0; j < oMap.groups[i].squares.length; j++) {
+                    aResult.push(oMap.groups[i].squares[j].id);
+                }
+            }
+        }
+
+        return aResult;
+    }
+
+    function isCenter(x, y) {
+        return aTileCenters.indexOf(x.toString() + y.toString()) !== -1;
+    }
+
+    function isOutside(x, y) {
+        return aAllMapSquares.indexOf(x.toString() + y.toString()) === -1;
+    }
+
+    function isRevealed(x, y) {
+        return aRevealedSquares.indexOf(x.toString() + y.toString()) !== -1;
     }
 }

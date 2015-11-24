@@ -41,6 +41,12 @@
                 }
             });
 
+            socket.on('mapupdate', function(data) {
+                var map = JSON.parse(data);
+
+                fnDrawAll(aImages, map);
+            });
+
             $(document).on('click', '#btnNewGame', function() {
                socket.emit('newgame', { username: '{{user.username}}' });
             });
@@ -66,6 +72,13 @@
             loaders.push(loadSprite('../images/image2.png'));
             loaders.push(loadSprite('../images/image3.png'));
             loaders.push(loadSprite('../images/image4.png'));
+            loaders.push(loadSprite('../images/tile1.png'));
+            loaders.push(loadSprite('../images/tile2.png'));
+            loaders.push(loadSprite('../images/tile3.jpeg'));
+            loaders.push(loadSprite('../images/tile4.jpeg'));
+            loaders.push(loadSprite('../images/tile5.jpeg'));
+            loaders.push(loadSprite('../images/tile6.jpeg'));
+            loaders.push(loadSprite('../images/tile7.jpeg'));
             jQuery.when.apply(null, loaders).done(function() {
                 console.log("All images loaded. Drawing in the canvas now...");
                 fnDrawAll(aImages);

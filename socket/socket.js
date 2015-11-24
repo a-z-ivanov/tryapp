@@ -13,6 +13,8 @@ module.exports = function(io, games) {
 
                 socket.broadcast.emit('gameroomupdate', JSON.stringify(games));
                 socket.emit('gameroomupdate', JSON.stringify(games));
+                var map = require('../models/map.json');
+                socket.emit('mapupdate', JSON.stringify(map));
             });
         });
 };
