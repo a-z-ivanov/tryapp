@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Game Lobby</title>
+	<link rel="stylesheet" href="../stylesheets/gamelobby.css">
+	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+	$(function(){
+		var host = '{{host}}';
+        var username = '{{user.username}}';
+		var socket = io.connect(host + "/gamelist");
+
+		socket.on('connect', function() {
+			console.log('Conncetion Established !');
+		});
+
+		socket.on('gameroomupdate', function(data) {
+			var games = JSON.parse(data);
+
+			$('.gamesList').html('');
+			for(var i = 0; i < games.length; i++) {
+				var sLI = "<li class='game'>"
+                for(var j = 0; j < games[i].requiredPlayers; j++) {
+                    var playerName = "";
+                    if (j < games[i].players.length) {
+                        playerName = games[i].players[j];
+                    }
+                    sLI += "<span>";
+                    sLI += playerName;
+                    sLI += "</span>";
+                }
+                sLI += "<button id='btnJoin-" + games[i].game_number + "'>Join</button>";
+                sLI += "</li>";
+				$('.gamesList').append(sLI);
+			}
+		});
+
+        socket.on('startgame', function(data) {
+            var game = JSON.parse(data);
+
+            console.log(data);
+
+            if (game.players.indexOf(username) !== -1) {
+                setTimeout(function() {
+                    window.location = "/home";
+                }, 1000);
+            }
+        });
+
+		$(document).on('click', '#btnNewGame', function() {
+			socket.emit('newgame', { username: username });
+		});
+
+        $(document).on('click', '.gamesList', function(oEvent) {
+            if (oEvent.target.tagName === 'BUTTON') {
+                var gameNumber = parseInt(oEvent.target.id.split("-")[1], 10);
+                socket.emit('joingame', {username: username, game_number: gameNumber});
+            }
+        });
+	})
+	</script>
+</head>
+<body>
+<header>
+</header>
+<div class="gameListContainer">
+	<ul class="gamesList">
+		<!--<li class='game' id='game-{{game_number}}'>-->
+            <!--<span>player name</span>-->
+            <!--<span>player name</span>-->
+            <!--<span>player name</span>-->
+            <!--<span>player name</span>-->
+            <!--<button id="btnJoin-{{game_number}}" />-->
+        <!--</li>-->
+	</ul>
+	<button id="btnNewGame">New Game</button>
+</div>
+</body>
+</html>

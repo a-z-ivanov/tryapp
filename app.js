@@ -10,12 +10,6 @@ var bodyParser = require('body-parser');
 var config = require('./configs/config.js');
 var mongoose = require('mongoose');
 
-var games = [
-    //{
-    //    game_number:123451234
-    //}
-];
-
 // Connect to DB
 mongoose.connect(config.dbURL);
 
@@ -81,7 +75,10 @@ app.set('port', process.env.PORT || 5000);
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 
-require('./socket/socket.js')(io, games);
+var GameServer = require('./game/gameserver.js');
+var gameServer = new GameServer();
+
+require('./socket/socket.js')(io, gameServer);
 
 server.listen(app.get('port'), function() {
     console.log('server running on port ' + app.get('port'));

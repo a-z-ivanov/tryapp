@@ -19,7 +19,7 @@ module.exports = function(passport, config){
 
     /* Handle Login POST */
     router.post('/login', passport.authenticate('login', {
-        successRedirect: '/home',
+        successRedirect: '/lobby',
         failureRedirect: '/',
         failureFlash : true
     }));
@@ -37,7 +37,13 @@ module.exports = function(passport, config){
     }));
 
     /* GET Home Page */
-    router.get('/home', securePages, function(req, res){
+    router.get('/lobby', securePages, function(req, res) {
+        res.render('lobby', { user: req.user, host: config.host });
+    });
+
+    /* GET Home Page */
+    router.get('/home', securePages, function(req, res) {
+        console.log("User " + req.user + " redirected to /home");
         res.render('home', { user: req.user, host: config.host });
     });
 

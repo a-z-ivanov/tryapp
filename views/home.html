@@ -14,45 +14,9 @@
             <canvas id="hexmap" width="660" height="624"></canvas>
         </div>
 
-        <div>
-            <ul class="gamesList">
-            </ul>
-            <button id="btnNewGame">New Game</button>
-        </div>
-
         <script src="../js/hexagons.js"></script>
         <script src="../js/jquery-1.11.3.js"></script>
         <script language="javascript">
-            //socket.io
-            var host = '{{host}}';
-            var socket = io.connect(host + "/gamelist");
-
-            socket.on('connect', function() {
-                console.log('Conncetion Established !');
-            });
-
-            socket.on('gameroomupdate', function(data) {
-                var games = JSON.parse(data);
-
-                $('.gamesList').html('');
-                for(var i = 0; i < games.length; i++) {
-                    var sLI = "<li>Game: " + games[i].game_number + "</li>";
-                    $('.gamesList').append(sLI);
-                }
-            });
-
-            socket.on('mapupdate', function(data) {
-                var map = JSON.parse(data);
-
-                fnDrawAll(aImages, map);
-            });
-
-            $(document).on('click', '#btnNewGame', function() {
-               socket.emit('newgame', { username: '{{user.username}}' });
-            });
-
-            //////////////
-
             var aImages = [];
             function loadSprite(src) {
                 var deferred = jQuery.Deferred();
@@ -64,6 +28,24 @@
                 sprite.src = src;
                 aImages.push(sprite);
                 return deferred.promise();
+            }
+
+            function loadingImagesFinished() {
+                //socket.io
+                var host = '{{host}}';
+                var socket = io.connect(host + "/game");
+
+                socket.on('connect', function() {
+                    console.log('Conncetion Established !');
+                });
+
+
+                socket.on('mapupdate', function(data) {
+                    var map = JSON.parse(data);
+
+                    fnDrawAll(aImages, map);
+                });
+                jQuery('#loading').hide();
             }
 
             var loaders = [];
@@ -79,11 +61,8 @@
             loaders.push(loadSprite('../images/tile5.jpeg'));
             loaders.push(loadSprite('../images/tile6.jpeg'));
             loaders.push(loadSprite('../images/tile7.jpeg'));
-            jQuery.when.apply(null, loaders).done(function() {
-                console.log("All images loaded. Drawing in the canvas now...");
-                fnDrawAll(aImages);
-                jQuery('#loading').hide();
-            });
+
+            jQuery.when.apply(null, loaders).done(loadingImagesFinished);
         </script>
     </body>
 </html>
