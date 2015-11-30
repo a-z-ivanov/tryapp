@@ -40,9 +40,25 @@ module.exports = function(io, gameServer) {
     var game = io.of('/game')
         .on('connection', function(socket) {
             console.log('Socket.io connection to game established!');
-            console.log("socket.id: ", socket.id);
 
-            var map = require('../models/map.json');
-            socket.emit('mapupdate', JSON.stringify(map));
+            socket.on('creategamechannel', function(data) {
+                console.log("creating game channel: " + data.game_number);
+                socket.username = data.username;
+                socket.player = data.player;
+                socket.join(data.game_number);
+
+                var game = gameServer.findGame(parseInt(data.game_number, 10));
+
+                socket.emit('mapupdate', JSON.stringify(game.map));
+            });
+
+            //socket.emit('playermove', { game_number: game_number, player: player, x: toX, y: toY});
+            socket.on('playermove', function(data) {
+                var game = gameServer.findGame(parseInt(data.game_number, 10));
+                game.playerMove(parseInt(data.player,10), parseInt(data.x), parseInt(data.y));
+
+                socket.broadcast.to(data.game_number).emit('mapupdate', JSON.stringify(game.map));
+                socket.emit('mapupdate', JSON.stringify(game.map));
+            });
         });
 };

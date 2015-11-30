@@ -32,6 +32,7 @@ function fnDrawAll(aImages, oMap){
 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         drawBoard(ctx, boardWidth, boardHeight);
+        drawPlayers(ctx, boardWidth, boardHeight, oMap.players);
 
         canvas.addEventListener("mousedown", function(eventInfo) {
             var x,
@@ -56,6 +57,7 @@ function fnDrawAll(aImages, oMap){
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             drawBoard(ctx, boardWidth, boardHeight);
+            drawPlayers(ctx, boardWidth, boardHeight, oMap.players);
 
             // Check if the mouse's coords are on the board
             if(hexX >= 0 && hexX < boardWidth) {
@@ -104,6 +106,18 @@ function fnDrawAll(aImages, oMap){
                         j * (sideLength + hexHeight));
                 }
             }
+        }
+    }
+
+    function drawPlayers(canvasContext, width, height, players) {
+        for(var i = 0; i < players.length; i++) {
+            var playerOffset = findPlayerPicOffset(i);
+            var offsetX = playerOffset.offset*(10/playerOffset.total);
+
+            //drawImage(aImages[11 + i],
+            drawImage(aImages[i],
+                players[i].square.x * hexRectangleWidth + ((players[i].square.y % 2) * hexRadius) + offsetX,
+                players[i].square.y * (sideLength + hexHeight));
         }
     }
 
@@ -216,5 +230,24 @@ function fnDrawAll(aImages, oMap){
 
     function isRevealed(x, y) {
         return aRevealedSquares.indexOf(x.toString() + y.toString()) !== -1;
+    }
+
+    function findPlayerPicOffset(player) {
+        var squareTotalPlayers = 0,
+            offset = 0;
+
+        for(var i = 0; i < oMap.players.length; i++) {
+            if (oMap.players[i].square.x === oMap.players[player].square.x && oMap.players[i].square.y === oMap.players[player].square.y) {
+                squareTotalPlayers++;
+
+                if (i < player) {
+                    offset++;
+                } else if (i > player) {
+                    offset--;
+                }
+            }
+        }
+
+        return { total: squareTotalPlayers, offset: offset };
     }
 }

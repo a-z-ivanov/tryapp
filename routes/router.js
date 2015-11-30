@@ -9,7 +9,7 @@ function securePages(req, res, next){
     }
 }
 
-module.exports = function(passport, config){
+module.exports = function(passport, config, gameServer){
 
     /* GET login page. */
     router.get('/', function(req, res) {
@@ -31,7 +31,7 @@ module.exports = function(passport, config){
 
     /* Handle Registration POST */
     router.post('/signup', passport.authenticate('signup', {
-        successRedirect: '/home',
+        successRedirect: '/lobby',
         failureRedirect: '/signup',
         failureFlash : true
     }));
@@ -42,9 +42,13 @@ module.exports = function(passport, config){
     });
 
     /* GET Home Page */
-    router.get('/home', securePages, function(req, res) {
+    router.get('/home/:game_id', securePages, function(req, res) {
         console.log("User " + req.user + " redirected to /home");
-        res.render('home', { user: req.user, host: config.host });
+
+        var iGameId = parseInt(req.params.game_id, 10);
+        var game = gameServer.findGame(iGameId);
+        var player_pos = game.getPlayerPosition(req.user.username);
+        res.render('home', { user: req.user, host: config.host, game_number: iGameId, player:  player_pos});
     });
 
     /* Handle Logout */

@@ -60,7 +60,10 @@ app.use(flash());
 var initPassport = require('./auth/init');
 initPassport(passport);
 
-var routes = require('./routes/router')(passport, config);
+var GameServer = require('./game/gameserver.js');
+var gameServer = new GameServer();
+
+var routes = require('./routes/router')(passport, config, gameServer);
 app.use('/', routes);
 
 /// catch 404 and forward to error handler
@@ -74,9 +77,6 @@ app.set('port', process.env.PORT || 5000);
 
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
-
-var GameServer = require('./game/gameserver.js');
-var gameServer = new GameServer();
 
 require('./socket/socket.js')(io, gameServer);
 

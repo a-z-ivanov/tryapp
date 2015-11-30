@@ -25,6 +25,9 @@ GameServer.prototype.newGame = function(userName) {
 };
 
 GameServer.prototype.findGame = function(gameNumber) {
+    console.log('finding game: ' + gameNumber);
+    console.log("typeof gameNumber: " + typeof gameNumber);
+
     return this.games.find(function(game){
         return game.getNumber() === gameNumber;
     });

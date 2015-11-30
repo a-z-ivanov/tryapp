@@ -14,6 +14,10 @@
             <canvas id="hexmap" width="660" height="624"></canvas>
         </div>
 
+        <input id="toX" value="0"/>
+        <input id="toY" value="0"/>
+        <button id="btnMove">Move</button>
+
         <script src="../js/hexagons.js"></script>
         <script src="../js/jquery-1.11.3.js"></script>
         <script language="javascript">
@@ -33,12 +37,19 @@
             function loadingImagesFinished() {
                 //socket.io
                 var host = '{{host}}';
+                var game_number = '{{game_number}}';
+                var username = '{{user.username}}';
+                var player = '{{player}}';
+                console.log('player_pos: ' + player);
+                console.log('user.username: ' + username);
+
                 var socket = io.connect(host + "/game");
 
                 socket.on('connect', function() {
                     console.log('Conncetion Established !');
-                });
 
+                    socket.emit('creategamechannel', {username: username, player: player, game_number: game_number});
+                });
 
                 socket.on('mapupdate', function(data) {
                     var map = JSON.parse(data);
@@ -46,6 +57,14 @@
                     fnDrawAll(aImages, map);
                 });
                 jQuery('#loading').hide();
+
+                //interactions
+                $(document).on('click', '#btnMove', function(e) {
+                    var toX = $('#toX').val(),
+                            toY = $('#toY').val();
+
+                    socket.emit('playermove', { game_number: game_number, player: player, x: toX, y: toY});
+                });
             }
 
             var loaders = [];

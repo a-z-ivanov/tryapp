@@ -4,8 +4,8 @@ canvas {
 }
 
 .mapcontainer {
-    width:700px;
-    height:700px;
+    width:500px;
+    height:500px;
     float: left;
     overflow:scroll;
 }

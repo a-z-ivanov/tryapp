@@ -44,7 +44,7 @@
 
             if (game.players.indexOf(username) !== -1) {
                 setTimeout(function() {
-                    window.location = "/home";
+                    window.location = "/home/" + game.game_number;
                 }, 1000);
             }
         });
