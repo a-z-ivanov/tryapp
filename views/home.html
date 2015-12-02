@@ -11,15 +11,15 @@
         </div>
 
         <div class="mapcontainer">
-            <canvas id="hexmap" width="660" height="624"></canvas>
+            <canvas id="hexmap" width="2700" height="2500"></canvas>
         </div>
 
         <input id="toX" value="0"/>
         <input id="toY" value="0"/>
         <button id="btnMove">Move</button>
 
-        <script src="../js/hexagons.js"></script>
         <script src="../js/jquery-1.11.3.js"></script>
+        <script src="../js/hexagons.js"></script>
         <script language="javascript">
             var aImages = [];
             function loadSprite(src) {
@@ -55,6 +55,8 @@
                     var map = JSON.parse(data);
 
                     fnDrawAll(aImages, map);
+//                    jQuery('.mapcontainer').scrollLeft(1000);
+//                    jQuery('.mapcontainer').scrollTop(1000);
                 });
                 jQuery('#loading').hide();
 
@@ -73,13 +75,34 @@
             loaders.push(loadSprite('../images/image2.png'));
             loaders.push(loadSprite('../images/image3.png'));
             loaders.push(loadSprite('../images/image4.png'));
-            loaders.push(loadSprite('../images/tile1.png'));
-            loaders.push(loadSprite('../images/tile2.png'));
-            loaders.push(loadSprite('../images/tile3.jpeg'));
-            loaders.push(loadSprite('../images/tile4.jpeg'));
-            loaders.push(loadSprite('../images/tile5.jpeg'));
-            loaders.push(loadSprite('../images/tile6.jpeg'));
-            loaders.push(loadSprite('../images/tile7.jpeg'));
+            loaders.push(loadSprite('../images/A.png'));
+            loaders.push(loadSprite('../images/country_1.png'));
+            loaders.push(loadSprite('../images/country_2.png'));
+            loaders.push(loadSprite('../images/country_3.png'));
+            loaders.push(loadSprite('../images/country_4.png'));
+            loaders.push(loadSprite('../images/country_5.png'));
+            loaders.push(loadSprite('../images/country_6.png'));
+            loaders.push(loadSprite('../images/country_7.png'));
+            loaders.push(loadSprite('../images/country_8.png'));
+            loaders.push(loadSprite('../images/country_9.png'));
+            loaders.push(loadSprite('../images/country_10.png'));
+            loaders.push(loadSprite('../images/country_11.png'));
+            loaders.push(loadSprite('../images/country_12.png'));
+            loaders.push(loadSprite('../images/country_13.png'));
+            loaders.push(loadSprite('../images/country_14.png'));
+            loaders.push(loadSprite('../images/core_1.png'));
+            loaders.push(loadSprite('../images/core_2.png'));
+            loaders.push(loadSprite('../images/core_3.png'));
+            loaders.push(loadSprite('../images/core_4.png'));
+            loaders.push(loadSprite('../images/core_5.png'));
+            loaders.push(loadSprite('../images/core_6.png'));
+            loaders.push(loadSprite('../images/core_7.png'));
+            loaders.push(loadSprite('../images/core_8.png'));
+            loaders.push(loadSprite('../images/core_9.png'));
+            loaders.push(loadSprite('../images/core_10.png'));
+            loaders.push(loadSprite('../images/monster_1.png'));
+            loaders.push(loadSprite('../images/monster_2.png'));
+            loaders.push(loadSprite('../images/monster_3.png'));
 
             jQuery.when.apply(null, loaders).done(loadingImagesFinished);
         </script>

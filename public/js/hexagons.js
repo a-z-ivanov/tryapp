@@ -6,17 +6,21 @@ function fnDrawAll(aImages, oMap){
         hexRectangleHeight,
         hexRectangleWidth,
         hexagonAngle = 0.523598776, // 30 degrees in radians
-        sideLength = 36,
-        boardWidth = 10,
-        boardHeight = 10,
+        //sideLength = 36,
+        sideLength = 54,
+        boardWidth = 30,
+        boardHeight = 30,
         strokeStyleRegular = "#CCCCCC",
         strokeStyleMarked = "#00CC00",
-        imageHeight = 32,
-        imageWidth = 32,
-        iCurrentTile = 0,
-        aTileCenters = getCenters(),
+        //imageHeight = 32,
+        //imageWidth = 32,
+        imageHeight = sideLength,
+        imageWidth = sideLength,
+        mTilesByCenter = {},
+        aTileCenters = getRevealedCenters(),
         aAllMapSquares = getAllSquares(),
-        aRevealedSquares = getRevealedSquares();
+        aRevealedSquares = getRevealedSquares(),
+        mObjects = getMapObjects();
 
     hexHeight = Math.sin(hexagonAngle) * sideLength;
     hexRadius = Math.cos(hexagonAngle) * sideLength;
@@ -32,7 +36,9 @@ function fnDrawAll(aImages, oMap){
 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         drawBoard(ctx, boardWidth, boardHeight);
+        drawObjects(mObjects);
         drawPlayers(ctx, boardWidth, boardHeight, oMap.players);
+        scrollTo(6, 28);
 
         canvas.addEventListener("mousedown", function(eventInfo) {
             var x,
@@ -57,6 +63,7 @@ function fnDrawAll(aImages, oMap){
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             drawBoard(ctx, boardWidth, boardHeight);
+            drawObjects(mObjects);
             drawPlayers(ctx, boardWidth, boardHeight, oMap.players);
 
             // Check if the mouse's coords are on the board
@@ -72,8 +79,6 @@ function fnDrawAll(aImages, oMap){
     function drawBoard(canvasContext, width, height) {
         var i,
             j;
-
-        iCurrentTile = 0;
 
         for(i = 0; i < width; ++i) {
             for(j = 0; j < height; ++j) {
@@ -101,10 +106,27 @@ function fnDrawAll(aImages, oMap){
                 }
 
                 if (isCenter(i, j)) {
-                    drawTile(aImages[4 + iCurrentTile++],
+                    drawTile(aImages[4 + mTilesByCenter[i.toString() + "_" + j.toString()]],
                         i * hexRectangleWidth + ((j % 2) * hexRadius),
                         j * (sideLength + hexHeight));
                 }
+            }
+        }
+    }
+
+    function drawObjects(objects) {
+        for(var key in objects) {
+            var obj = objects[key];
+            var objPicOffset = obj.picOffset;
+
+            if (objPicOffset) { //has pic
+                drawImage(
+                    aImages[objPicOffset],
+                    obj.x * hexRectangleWidth + ((obj.y % 2) * hexRadius),
+                    obj.y * (sideLength + hexHeight),
+                    1.5*imageWidth,
+                    1.5*imageHeight
+                );
             }
         }
     }
@@ -114,10 +136,12 @@ function fnDrawAll(aImages, oMap){
             var playerOffset = findPlayerPicOffset(i);
             var offsetX = playerOffset.offset*(10/playerOffset.total);
 
-            //drawImage(aImages[11 + i],
             drawImage(aImages[i],
                 players[i].square.x * hexRectangleWidth + ((players[i].square.y % 2) * hexRadius) + offsetX,
-                players[i].square.y * (sideLength + hexHeight));
+                players[i].square.y * (sideLength + hexHeight),
+                imageWidth,
+                imageHeight
+            );
         }
     }
 
@@ -166,23 +190,24 @@ function fnDrawAll(aImages, oMap){
         }
     }
 
-    function drawImage(img, x, y) {
-        ctx.drawImage(img, x + (hexRectangleWidth-imageWidth)/2, y + (hexRectangleHeight - imageHeight)/2);
+    function drawImage(img, x, y, sizeX, sizeY) {
+        ctx.drawImage(img, x + (hexRectangleWidth-sizeX)/2, y + (hexRectangleHeight - sizeY)/2, sizeX, sizeY);
     }
 
     function drawTile(tile, x, y) {
         ctx.drawImage(tile, x - hexRectangleWidth, y - 0.75*hexRectangleHeight, 3*hexRectangleWidth, 2.5*hexRectangleHeight);
     }
 
-    function getCenters() {
+    function getRevealedCenters() {
         var aResult = [];
 
         if (oMap) {
-            for (var i = 0; i < oMap.groups.length; i++) {
-                for (var j = 0; j < oMap.groups[i].squares.length; j++) {
-                    if (oMap.groups[i].revealed && oMap.groups[i].squares[j].center) {
-                        aResult.push(oMap.groups[i].squares[j].id);
-                    }
+            for(var i = 0; i < oMap.centers.length; i++) {
+                if (oMap.centers[i].tile !== undefined) {
+                    var x = oMap.centers[i].x;
+                    var y = oMap.centers[i].y;
+                    aResult.push(x.toString() + "_" + y.toString());
+                    mTilesByCenter[x.toString() + "_" + y.toString()] = oMap.centers[i].tile;
                 }
             }
         }
@@ -194,11 +219,11 @@ function fnDrawAll(aImages, oMap){
         var aResult = [];
 
         if (oMap) {
-            for (var i = 0; i < oMap.groups.length; i++) {
-                for (var j = 0; j < oMap.groups[i].squares.length; j++) {
-                    if (oMap.groups[i].revealed) {
-                        aResult.push(oMap.groups[i].squares[j].id);
-                    }
+            for(var i = 0; i < oMap.centers.length; i++) {
+                if (oMap.centers[i].tile !== undefined) {
+                    var x = oMap.centers[i].x;
+                    var y = oMap.centers[i].y;
+                    aResult = aResult.concat(getSquaresFromCenter(x, y));
                 }
             }
         }
@@ -210,9 +235,61 @@ function fnDrawAll(aImages, oMap){
         var aResult = [];
 
         if (oMap) {
-            for (var i = 0; i < oMap.groups.length; i++) {
-                for (var j = 0; j < oMap.groups[i].squares.length; j++) {
-                    aResult.push(oMap.groups[i].squares[j].id);
+            for(var i = 0; i < oMap.centers.length; i++) {
+                var x = oMap.centers[i].x;
+                var y = oMap.centers[i].y;
+                aResult = aResult.concat(getSquaresFromCenter(x, y));
+            }
+        }
+
+        return aResult;
+    }
+
+    function getSquaresFromCenter(x, y) {
+        var aResult = [];
+
+        aResult.push(x.toString() + "_" + y.toString());
+
+        if (y % 2) { //odd
+            aResult.push((x+1).toString() + "_" + (y-1).toString());
+            aResult.push((x+1).toString() + "_" + (y+1).toString());
+        } else { //even
+            aResult.push((x-1).toString() + "_" + (y-1).toString());
+            aResult.push((x-1).toString() + "_" + (y+1).toString());
+        }
+
+        aResult.push(x.toString() + "_" + (y-1).toString());
+        aResult.push(x.toString() + "_" + (y+1).toString());
+        aResult.push((x+1).toString() + "_" + y.toString());
+        aResult.push((x-1).toString() + "_" + y.toString());
+
+        return aResult;
+    }
+
+    function getMapObjects() {
+        var aResult = {};
+
+        if (oMap) {
+            for(var i = 0; i < oMap.centers.length; i++) {
+                if (oMap.centers[i].tile !== undefined && oMap.objects[oMap.centers[i].tile.toString()]) {
+                    var x = oMap.centers[i].x;
+                    var y = oMap.centers[i].y;
+                    var tileObjects = oMap.objects[oMap.centers[i].tile.toString()];
+
+                    for (var j = 0; j < tileObjects.length; j++) {
+                        var obj = tileObjects[j];
+                        var objX = x + obj.xOffset;
+                        var objY = y + obj.yOffset;
+
+
+                        if (y % 2 === 0) { //even
+                            objX -= 1;
+                        }
+
+                        var key = objX.toString() + "_" + objY.toString();
+
+                        aResult[key] = { x: objX, y: objY, objectType: obj.objectType, picOffset: obj.picOffset };
+                    }
                 }
             }
         }
@@ -221,15 +298,15 @@ function fnDrawAll(aImages, oMap){
     }
 
     function isCenter(x, y) {
-        return aTileCenters.indexOf(x.toString() + y.toString()) !== -1;
+        return aTileCenters.indexOf(x.toString() + "_" + y.toString()) !== -1;
     }
 
     function isOutside(x, y) {
-        return aAllMapSquares.indexOf(x.toString() + y.toString()) === -1;
+        return aAllMapSquares.indexOf(x.toString() + "_" + y.toString()) === -1;
     }
 
     function isRevealed(x, y) {
-        return aRevealedSquares.indexOf(x.toString() + y.toString()) !== -1;
+        return aRevealedSquares.indexOf(x.toString() + "_" + y.toString()) !== -1;
     }
 
     function findPlayerPicOffset(player) {
@@ -249,5 +326,14 @@ function fnDrawAll(aImages, oMap){
         }
 
         return { total: squareTotalPlayers, offset: offset };
+    }
+
+    function scrollTo(x, y) {
+        var $mapContainer = $('.mapcontainer');
+        var height = $mapContainer.innerHeight();
+        var width = $mapContainer.innerWidth();
+
+        $mapContainer.scrollLeft((x + 0.5) * hexRectangleWidth + 1.25*((y % 2) * hexRadius) - width/2);
+        $mapContainer.scrollTop((y + 0.75) * (sideLength + hexHeight) - height/2);
     }
 }

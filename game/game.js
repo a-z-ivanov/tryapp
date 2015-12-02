@@ -1,4 +1,4 @@
-var initialMap = require('../models/map.json');
+var initialMap = require('../models/map1.json');
 
 module.exports = Game;
 
@@ -19,7 +19,7 @@ function Game(gameNumber, requiredPlayers) {
 Game.prototype.join = function(userName) {
     if (this.players.length < this.requiredPlayers) {
         this.players.push(userName);
-        this.map.players.push({ square: { x: 1, y: 0}});
+        this.map.players.push({ square: { x: 6, y: 28}});
         return true;
     }
 
