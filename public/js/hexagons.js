@@ -11,7 +11,9 @@ var Map = (function() {
         StrokeStyle = {
             "Regular": "#CCCCCC",
             "Marked": "#00CC00",
-            "Black": "#000000"
+            "Black": "#000000",
+            "ActivePlayer": "#FFFF00",
+            "ActivePlayerMarked": "#FF0000"
         },
         FillStyle = {
             "Black" : "#000000"
@@ -21,8 +23,10 @@ var Map = (function() {
             "Marked": 3
         };
 
-    function Map(aImages) {
+    function Map(aImages, iActivePlayerIndex) {
         this.aImages = aImages;
+        this.iActivePlayerIndex = iActivePlayerIndex;
+        this.activePlayerMarked = false;
 
         this.$mapContainer = $('.mapcontainer');
         this.canvas = document.getElementById('hexmap');
@@ -69,6 +73,11 @@ var Map = (function() {
 
     Map.prototype.isRevealed = function(x, y) {
         return this.aRevealedSquares.indexOf(x.toString() + "_" + y.toString()) !== -1;
+    };
+
+    Map.prototype.isActivePlayer = function(x, y) {
+        return this.oMapData.players[this.iActivePlayerIndex].square.x === x
+                && this.oMapData.players[this.iActivePlayerIndex].square.y === y;
     };
 
     function initRevealedCenters() {
@@ -191,13 +200,27 @@ var Map = (function() {
             hexY = Math.floor(y / (hexHeight + sideLength)),
             hexX = Math.floor((x - (hexY % 2) * hexRadius) / hexRectangleWidth),
             screenX = hexX * hexRectangleWidth + ((hexY % 2) * hexRadius),
-            screenY = hexY * (hexHeight + sideLength);
+            screenY = hexY * (hexHeight + sideLength),
+            strokeStyle = StrokeStyle.Marked;
 
         // Check if the mouse's coords are on the board
         if (hexX >= 0 && hexX < boardWidth && hexY >= 0 && hexY < boardHeight) {
             this.drawAll();
-            drawHexagon.call(this, screenX, screenY, true);
-            //alert(hexX + " " + hexY);
+
+            if (this.isActivePlayer(hexX, hexY)) {
+                this.activePlayerMarked = !this.activePlayerMarked;
+
+                if (this.activePlayerMarked) {
+                    strokeStyle = StrokeStyle.ActivePlayerMarked;
+                }
+            }
+
+            drawHexagon.call(this, screenX, screenY, strokeStyle, LineWidth.Marked);
+
+            if (this.activePlayerMarked && !this.isActivePlayer(hexX, hexY)) {
+                this.$mapContainer.trigger( "playermove", { x: hexX, y: hexY });
+                this.activePlayerMarked = false;
+            }
         }
     }
 
@@ -233,7 +256,8 @@ var Map = (function() {
                         this,
                         i * hexRectangleWidth + ((j % 2) * hexRadius),
                         j * (sideLength + hexHeight),
-                        false
+                        StrokeStyle.Regular,
+                        LineWidth.Regular
                     );
                 }
 
@@ -268,21 +292,36 @@ var Map = (function() {
 
     function drawPlayers() {
         for (var i = 0; i < this.oMapData.players.length; i++) {
-            var playerOffset = findPlayerPicOffset.call(this, i);
-            var offsetX = playerOffset.offset * (10 / playerOffset.total);
+            var playerOffset = findPlayerPicOffset.call(this, i),
+                offsetX = playerOffset.offset * (10 / playerOffset.total);
 
-            drawImage.call(this, this.aImages[i],
+            drawImage.call(
+                this,
+                this.aImages[i],
                 this.oMapData.players[i].square.x * hexRectangleWidth + ((this.oMapData.players[i].square.y % 2) * hexRadius) + offsetX,
                 this.oMapData.players[i].square.y * (sideLength + hexHeight),
                 sideLength,
                 sideLength
             );
+
+            if (i === this.iActivePlayerIndex) {
+                var x = this.oMapData.players[i].square.x,
+                    y = this.oMapData.players[i].square.y,
+                    screenX = x * hexRectangleWidth + ((y % 2) * hexRadius),
+                    screenY = y * (sideLength + hexHeight);
+
+                drawHexagon.call(
+                    this,
+                    screenX,
+                    screenY,
+                    StrokeStyle.ActivePlayer,
+                    LineWidth.Marked
+                );
+            }
         }
     }
 
-    function drawHexagon(x, y, stroke) {
-        var stroke = stroke || false;
-
+    function drawHexagon(x, y, strokeStyle, lineWidth) {
         this.ctx.beginPath();
         this.ctx.moveTo(x + hexRadius, y);
         this.ctx.lineTo(x + hexRectangleWidth, y + hexHeight);
@@ -292,15 +331,9 @@ var Map = (function() {
         this.ctx.lineTo(x, y + hexHeight);
         this.ctx.closePath();
 
-        if (stroke) {
-            this.ctx.strokeStyle = StrokeStyle.Marked;
-            this.ctx.lineWidth = LineWidth.Marked;
-            this.ctx.stroke();
-        } else {
-            this.ctx.strokeStyle = StrokeStyle.Regular;
-            this.ctx.lineWidth = LineWidth.Regular;
-            this.ctx.stroke();
-        }
+        this.ctx.strokeStyle = strokeStyle;
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.stroke();
     }
 
     function drawBlackHexagon(x, y, stroke) {

@@ -35,7 +35,7 @@
             }
 
             function loadingImagesFinished() {
-                var map = new Map(aImages);
+                var map = new Map(aImages, parseInt('{{player}}'));
 
                 //socket.io
                 var host = '{{host}}';
@@ -68,6 +68,10 @@
                             toY = $('#toY').val();
 
                     socket.emit('playermove', { game_number: game_number, player: player, x: toX, y: toY});
+                });
+
+                $('.mapcontainer').on("playermove", function(event, params) {
+                    socket.emit('playermove', { game_number: game_number, player: player, x: params.x, y: params.y});
                 });
             }
 
