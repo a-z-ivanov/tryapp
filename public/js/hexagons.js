@@ -1,280 +1,127 @@
-function fnDrawAll(aImages, oMap){
-    var canvas = document.getElementById('hexmap');
-
-    var hexHeight,
-        hexRadius,
-        hexRectangleHeight,
-        hexRectangleWidth,
-        hexagonAngle = 0.523598776, // 30 degrees in radians
+var Map = (function() {
+    var hexagonAngle = 0.523598776, // 30 degrees in radians
         //sideLength = 36,
         sideLength = 54,
         boardWidth = 30,
         boardHeight = 30,
-        strokeStyleRegular = "#CCCCCC",
-        strokeStyleMarked = "#00CC00",
-        //imageHeight = 32,
-        //imageWidth = 32,
-        imageHeight = sideLength,
-        imageWidth = sideLength,
-        mTilesByCenter = {},
-        aTileCenters = getRevealedCenters(),
-        aAllMapSquares = getAllSquares(),
-        aRevealedSquares = getRevealedSquares(),
-        mObjects = getMapObjects();
+        hexHeight = Math.sin(hexagonAngle) * sideLength,
+        hexRadius = Math.cos(hexagonAngle) * sideLength,
+        hexRectangleHeight = sideLength + 2 * hexHeight,
+        hexRectangleWidth = 2 * hexRadius,
+        StrokeStyle = {
+            "Regular": "#CCCCCC",
+            "Marked": "#00CC00",
+            "Black": "#000000"
+        },
+        FillStyle = {
+            "Black" : "#000000"
+        },
+        LineWidth = {
+            "Regular": 2,
+            "Marked": 3
+        };
 
-    hexHeight = Math.sin(hexagonAngle) * sideLength;
-    hexRadius = Math.cos(hexagonAngle) * sideLength;
-    hexRectangleHeight = sideLength + 2 * hexHeight;
-    hexRectangleWidth = 2 * hexRadius;
+    function Map(aImages) {
+        this.aImages = aImages;
 
-    if (canvas.getContext){
-        var ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = "#000000";
-        ctx.strokeStyle = strokeStyleRegular;
-        ctx.lineWidth = 2;
-
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawBoard(ctx, boardWidth, boardHeight);
-        drawObjects(mObjects);
-        drawPlayers(ctx, boardWidth, boardHeight, oMap.players);
-        scrollTo(6, 28);
-
-        canvas.addEventListener("mousedown", function(eventInfo) {
-            var x,
-                y,
-                hexX,
-                hexY,
-                screenX,
-                screenY;
-
-            x = eventInfo.offsetX || eventInfo.layerX;
-            y = eventInfo.offsetY || eventInfo.layerY;
-
-            
-            hexY = Math.floor(y / (hexHeight + sideLength));
-            hexX = Math.floor((x - (hexY % 2) * hexRadius) / hexRectangleWidth);
-
-            screenX = hexX * hexRectangleWidth + ((hexY % 2) * hexRadius);
-            screenY = hexY * (hexHeight + sideLength);
-
-            //ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#000000";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            drawBoard(ctx, boardWidth, boardHeight);
-            drawObjects(mObjects);
-            drawPlayers(ctx, boardWidth, boardHeight, oMap.players);
-
-            // Check if the mouse's coords are on the board
-            if(hexX >= 0 && hexX < boardWidth) {
-                if(hexY >= 0 && hexY < boardHeight) {
-                    ctx.fillStyle = "#000000";
-                    drawHexagon(ctx, screenX, screenY, true);
-                }
-            }
-        });
+        this.$mapContainer = $('.mapcontainer');
+        this.canvas = document.getElementById('hexmap');
+        this.ctx = this.canvas.getContext ? this.canvas.getContext('2d') : null;
+        this.canvas.addEventListener("mousedown", handleCanvasMouseDown.bind(this));
     }
 
-    function drawBoard(canvasContext, width, height) {
-        var i,
-            j;
+    Map.prototype.drawAll = function() {
+        this.ctx.fillStyle = FillStyle.Black;
+        this.ctx.strokeStyle = StrokeStyle.Regular;
+        this.ctx.lineWidth = LineWidth.Regular;
 
-        for(i = 0; i < width; ++i) {
-            for(j = 0; j < height; ++j) {
-                if (isOutside(i, j)) {
-                    drawBlackHexagon(ctx,
-                        i * hexRectangleWidth + ((j % 2) * hexRadius),
-                        j * (sideLength + hexHeight),
-                        false
-                    );
-                } else if (!isRevealed(i, j)) {
-                    drawBlackHexagon(ctx,
-                        i * hexRectangleWidth + ((j % 2) * hexRadius),
-                        j * (sideLength + hexHeight),
-                        true
-                    );
-                }
+        drawClear.call(this);
+        drawBoard.call(this);
+        drawObjects.call(this);
+        drawPlayers.call(this);
+    };
 
-                if (!isOutside(i, j) && (oMap && !isRevealed(i, j))) {
-                    drawHexagon(
-                        ctx,
-                        i * hexRectangleWidth + ((j % 2) * hexRadius),
-                        j * (sideLength + hexHeight),
-                        false
-                    );
-                }
+    Map.prototype.update = function(data) {
+        this.oMapData = data;
 
-                if (isCenter(i, j)) {
-                    drawTile(aImages[4 + mTilesByCenter[i.toString() + "_" + j.toString()]],
-                        i * hexRectangleWidth + ((j % 2) * hexRadius),
-                        j * (sideLength + hexHeight));
+        initRevealedCenters.call(this);
+        initAllSquares.call(this);
+        initRevealedSquares.call(this);
+        initMapObjects.call(this);
+    };
+
+    Map.prototype.scrollTo = function(x, y) {
+        var height = this.$mapContainer.innerHeight();
+        var width = this.$mapContainer.innerWidth();
+
+        this.$mapContainer.scrollLeft((x + 0.5) * hexRectangleWidth + 1.25 * ((y % 2) * hexRadius) - width / 2);
+        this.$mapContainer.scrollTop((y + 0.75) * (sideLength + hexHeight) - height / 2);
+    };
+
+
+    Map.prototype.isCenter = function(x, y) {
+        return this.aTileCenters.indexOf(x.toString() + "_" + y.toString()) !== -1;
+    };
+
+    Map.prototype.isOutside = function(x, y) {
+        return this.aAllMapSquares.indexOf(x.toString() + "_" + y.toString()) === -1;
+    };
+
+    Map.prototype.isRevealed = function(x, y) {
+        return this.aRevealedSquares.indexOf(x.toString() + "_" + y.toString()) !== -1;
+    };
+
+    function initRevealedCenters() {
+        this.aTileCenters = [];
+        this.mTilesByCenter = {};
+
+        if (this.oMapData) {
+            for (var i = 0; i < this.oMapData.centers.length; i++) {
+                if (this.oMapData.centers[i].tile !== undefined) {
+                    var x = this.oMapData.centers[i].x;
+                    var y = this.oMapData.centers[i].y;
+                    this.aTileCenters.push(x.toString() + "_" + y.toString());
+                    this.mTilesByCenter[x.toString() + "_" + y.toString()] = this.oMapData.centers[i].tile;
                 }
             }
         }
     }
 
-    function drawObjects(objects) {
-        for(var key in objects) {
-            var obj = objects[key];
-            var objPicOffset = obj.picOffset;
+    function initRevealedSquares() {
+        this.aRevealedSquares = [];
 
-            if (objPicOffset) { //has pic
-                drawImage(
-                    aImages[objPicOffset],
-                    obj.x * hexRectangleWidth + ((obj.y % 2) * hexRadius),
-                    obj.y * (sideLength + hexHeight),
-                    1.5*imageWidth,
-                    1.5*imageHeight
-                );
-            }
-        }
-    }
-
-    function drawPlayers(canvasContext, width, height, players) {
-        for(var i = 0; i < players.length; i++) {
-            var playerOffset = findPlayerPicOffset(i);
-            var offsetX = playerOffset.offset*(10/playerOffset.total);
-
-            drawImage(aImages[i],
-                players[i].square.x * hexRectangleWidth + ((players[i].square.y % 2) * hexRadius) + offsetX,
-                players[i].square.y * (sideLength + hexHeight),
-                imageWidth,
-                imageHeight
-            );
-        }
-    }
-
-    function drawHexagon(canvasContext, x, y, stroke) {
-        var stroke = stroke || false;
-
-        canvasContext.beginPath();
-        canvasContext.moveTo(x + hexRadius, y);
-        canvasContext.lineTo(x + hexRectangleWidth, y + hexHeight);
-        canvasContext.lineTo(x + hexRectangleWidth, y + hexHeight + sideLength);
-        canvasContext.lineTo(x + hexRadius, y + hexRectangleHeight);
-        canvasContext.lineTo(x, y + sideLength + hexHeight);
-        canvasContext.lineTo(x, y + hexHeight);
-        canvasContext.closePath();
-
-        if(stroke) {
-            ctx.strokeStyle = strokeStyleMarked;
-            ctx.lineWidth = 3;
-            canvasContext.stroke();
-        } else {
-            ctx.strokeStyle = strokeStyleRegular;
-            ctx.lineWidth = 2;
-            canvasContext.stroke();
-        }
-    }
-
-    function drawBlackHexagon(canvasContext, x, y, stroke) {
-        canvasContext.beginPath();
-        canvasContext.moveTo(x + hexRadius, y);
-        canvasContext.lineTo(x + hexRectangleWidth, y + hexHeight);
-        canvasContext.lineTo(x + hexRectangleWidth, y + hexHeight + sideLength);
-        canvasContext.lineTo(x + hexRadius, y + hexRectangleHeight);
-        canvasContext.lineTo(x, y + sideLength + hexHeight);
-        canvasContext.lineTo(x, y + hexHeight);
-        canvasContext.closePath();
-
-        ctx.fillStyle = "#000000";
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
-        canvasContext.fill();
-
-        if (stroke) {
-            ctx.strokeStyle = strokeStyleRegular;
-            ctx.lineWidth = 2;
-            canvasContext.stroke();
-        }
-    }
-
-    function drawImage(img, x, y, sizeX, sizeY) {
-        ctx.drawImage(img, x + (hexRectangleWidth-sizeX)/2, y + (hexRectangleHeight - sizeY)/2, sizeX, sizeY);
-    }
-
-    function drawTile(tile, x, y) {
-        ctx.drawImage(tile, x - hexRectangleWidth, y - 0.75*hexRectangleHeight, 3*hexRectangleWidth, 2.5*hexRectangleHeight);
-    }
-
-    function getRevealedCenters() {
-        var aResult = [];
-
-        if (oMap) {
-            for(var i = 0; i < oMap.centers.length; i++) {
-                if (oMap.centers[i].tile !== undefined) {
-                    var x = oMap.centers[i].x;
-                    var y = oMap.centers[i].y;
-                    aResult.push(x.toString() + "_" + y.toString());
-                    mTilesByCenter[x.toString() + "_" + y.toString()] = oMap.centers[i].tile;
+        if (this.oMapData) {
+            for (var i = 0; i < this.oMapData.centers.length; i++) {
+                if (this.oMapData.centers[i].tile !== undefined) {
+                    var x = this.oMapData.centers[i].x;
+                    var y = this.oMapData.centers[i].y;
+                    this.aRevealedSquares = this.aRevealedSquares.concat(getSquaresFromCenter(x, y));
                 }
             }
         }
-
-        return aResult;
     }
 
-    function getRevealedSquares() {
-        var aResult = [];
+    function initAllSquares() {
+        this.aAllMapSquares = [];
 
-        if (oMap) {
-            for(var i = 0; i < oMap.centers.length; i++) {
-                if (oMap.centers[i].tile !== undefined) {
-                    var x = oMap.centers[i].x;
-                    var y = oMap.centers[i].y;
-                    aResult = aResult.concat(getSquaresFromCenter(x, y));
-                }
+        if (this.oMapData) {
+            for (var i = 0; i < this.oMapData.centers.length; i++) {
+                var x = this.oMapData.centers[i].x;
+                var y = this.oMapData.centers[i].y;
+                this.aAllMapSquares = this.aAllMapSquares.concat(getSquaresFromCenter(x, y));
             }
         }
-
-        return aResult;
     }
 
-    function getAllSquares() {
-        var aResult = [];
+    function initMapObjects() {
+        this.mObjects = {};
 
-        if (oMap) {
-            for(var i = 0; i < oMap.centers.length; i++) {
-                var x = oMap.centers[i].x;
-                var y = oMap.centers[i].y;
-                aResult = aResult.concat(getSquaresFromCenter(x, y));
-            }
-        }
-
-        return aResult;
-    }
-
-    function getSquaresFromCenter(x, y) {
-        var aResult = [];
-
-        aResult.push(x.toString() + "_" + y.toString());
-
-        if (y % 2) { //odd
-            aResult.push((x+1).toString() + "_" + (y-1).toString());
-            aResult.push((x+1).toString() + "_" + (y+1).toString());
-        } else { //even
-            aResult.push((x-1).toString() + "_" + (y-1).toString());
-            aResult.push((x-1).toString() + "_" + (y+1).toString());
-        }
-
-        aResult.push(x.toString() + "_" + (y-1).toString());
-        aResult.push(x.toString() + "_" + (y+1).toString());
-        aResult.push((x+1).toString() + "_" + y.toString());
-        aResult.push((x-1).toString() + "_" + y.toString());
-
-        return aResult;
-    }
-
-    function getMapObjects() {
-        var aResult = {};
-
-        if (oMap) {
-            for(var i = 0; i < oMap.centers.length; i++) {
-                if (oMap.centers[i].tile !== undefined && oMap.objects[oMap.centers[i].tile.toString()]) {
-                    var x = oMap.centers[i].x;
-                    var y = oMap.centers[i].y;
-                    var tileObjects = oMap.objects[oMap.centers[i].tile.toString()];
+        if (this.oMapData) {
+            for (var i = 0; i < this.oMapData.centers.length; i++) {
+                if (this.oMapData.centers[i].tile !== undefined && this.oMapData.objects[this.oMapData.centers[i].tile.toString()]) {
+                    var x = this.oMapData.centers[i].x;
+                    var y = this.oMapData.centers[i].y;
+                    var tileObjects = this.oMapData.objects[this.oMapData.centers[i].tile.toString()];
 
                     for (var j = 0; j < tileObjects.length; j++) {
                         var obj = tileObjects[j];
@@ -288,52 +135,201 @@ function fnDrawAll(aImages, oMap){
 
                         var key = objX.toString() + "_" + objY.toString();
 
-                        aResult[key] = { x: objX, y: objY, objectType: obj.objectType, picOffset: obj.picOffset };
+                        this.mObjects[key] = {x: objX, y: objY, objectType: obj.objectType, picOffset: obj.picOffset};
                     }
                 }
             }
         }
+    }
+
+    function getSquaresFromCenter(x, y) {
+        var aResult = [];
+
+        aResult.push(x.toString() + "_" + y.toString());
+
+        if (y % 2) { //odd
+            aResult.push((x + 1).toString() + "_" + (y - 1).toString());
+            aResult.push((x + 1).toString() + "_" + (y + 1).toString());
+        } else { //even
+            aResult.push((x - 1).toString() + "_" + (y - 1).toString());
+            aResult.push((x - 1).toString() + "_" + (y + 1).toString());
+        }
+
+        aResult.push(x.toString() + "_" + (y - 1).toString());
+        aResult.push(x.toString() + "_" + (y + 1).toString());
+        aResult.push((x + 1).toString() + "_" + y.toString());
+        aResult.push((x - 1).toString() + "_" + y.toString());
 
         return aResult;
     }
 
-    function isCenter(x, y) {
-        return aTileCenters.indexOf(x.toString() + "_" + y.toString()) !== -1;
-    }
-
-    function isOutside(x, y) {
-        return aAllMapSquares.indexOf(x.toString() + "_" + y.toString()) === -1;
-    }
-
-    function isRevealed(x, y) {
-        return aRevealedSquares.indexOf(x.toString() + "_" + y.toString()) !== -1;
-    }
-
-    function findPlayerPicOffset(player) {
+    function findPlayerPicOffset(iPlayerIndex) {
         var squareTotalPlayers = 0,
             offset = 0;
 
-        for(var i = 0; i < oMap.players.length; i++) {
-            if (oMap.players[i].square.x === oMap.players[player].square.x && oMap.players[i].square.y === oMap.players[player].square.y) {
+        for (var i = 0; i < this.oMapData.players.length; i++) {
+            if (this.oMapData.players[i].square.x === this.oMapData.players[iPlayerIndex].square.x
+                && this.oMapData.players[i].square.y === this.oMapData.players[iPlayerIndex].square.y) {
                 squareTotalPlayers++;
 
-                if (i < player) {
+                if (i < iPlayerIndex) {
                     offset++;
-                } else if (i > player) {
+                } else if (i > iPlayerIndex) {
                     offset--;
                 }
             }
         }
 
-        return { total: squareTotalPlayers, offset: offset };
+        return {total: squareTotalPlayers, offset: offset};
     }
 
-    function scrollTo(x, y) {
-        var $mapContainer = $('.mapcontainer');
-        var height = $mapContainer.innerHeight();
-        var width = $mapContainer.innerWidth();
+    //need context - bind or call to pass the this instance
 
-        $mapContainer.scrollLeft((x + 0.5) * hexRectangleWidth + 1.25*((y % 2) * hexRadius) - width/2);
-        $mapContainer.scrollTop((y + 0.75) * (sideLength + hexHeight) - height/2);
+    function handleCanvasMouseDown(eventInfo) {
+        var x = eventInfo.offsetX || eventInfo.layerX,
+            y = eventInfo.offsetY || eventInfo.layerY,
+            hexY = Math.floor(y / (hexHeight + sideLength)),
+            hexX = Math.floor((x - (hexY % 2) * hexRadius) / hexRectangleWidth),
+            screenX = hexX * hexRectangleWidth + ((hexY % 2) * hexRadius),
+            screenY = hexY * (hexHeight + sideLength);
+
+        // Check if the mouse's coords are on the board
+        if (hexX >= 0 && hexX < boardWidth && hexY >= 0 && hexY < boardHeight) {
+            this.drawAll();
+            drawHexagon.call(this, screenX, screenY, true);
+            //alert(hexX + " " + hexY);
+        }
     }
-}
+
+    function drawClear() {
+        this.ctx.fillStyle = FillStyle.Black;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    function drawBoard() {
+        var i,
+            j;
+
+        for (i = 0; i < boardWidth; ++i) {
+            for (j = 0; j < boardHeight; ++j) {
+                if (this.isOutside(i, j)) {
+                    drawBlackHexagon.call(
+                        this,
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight),
+                        false
+                    );
+                } else if (!this.isRevealed(i, j)) {
+                    drawBlackHexagon.call(
+                        this,
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight),
+                        true
+                    );
+                }
+
+                if (this.oMapData && !this.isOutside(i, j) && !this.isRevealed(i, j)) {
+                    drawHexagon.call(
+                        this,
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight),
+                        false
+                    );
+                }
+
+                if (this.isCenter(i, j)) {
+                    drawTile.call(
+                        this,
+                        this.aImages[4 + this.mTilesByCenter[i.toString() + "_" + j.toString()]],
+                        i * hexRectangleWidth + ((j % 2) * hexRadius),
+                        j * (sideLength + hexHeight));
+                }
+            }
+        }
+    }
+
+    function drawObjects() {
+        for (var key in this.mObjects) {
+            var obj = this.mObjects[key];
+            var objPicOffset = obj.picOffset;
+
+            if (objPicOffset) { //has pic
+                drawImage.call(
+                    this,
+                    this.aImages[objPicOffset],
+                    obj.x * hexRectangleWidth + ((obj.y % 2) * hexRadius),
+                    obj.y * (sideLength + hexHeight),
+                    1.5 * sideLength,
+                    1.5 * sideLength
+                );
+            }
+        }
+    }
+
+    function drawPlayers() {
+        for (var i = 0; i < this.oMapData.players.length; i++) {
+            var playerOffset = findPlayerPicOffset.call(this, i);
+            var offsetX = playerOffset.offset * (10 / playerOffset.total);
+
+            drawImage.call(this, this.aImages[i],
+                this.oMapData.players[i].square.x * hexRectangleWidth + ((this.oMapData.players[i].square.y % 2) * hexRadius) + offsetX,
+                this.oMapData.players[i].square.y * (sideLength + hexHeight),
+                sideLength,
+                sideLength
+            );
+        }
+    }
+
+    function drawHexagon(x, y, stroke) {
+        var stroke = stroke || false;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + hexRadius, y);
+        this.ctx.lineTo(x + hexRectangleWidth, y + hexHeight);
+        this.ctx.lineTo(x + hexRectangleWidth, y + hexHeight + sideLength);
+        this.ctx.lineTo(x + hexRadius, y + hexRectangleHeight);
+        this.ctx.lineTo(x, y + sideLength + hexHeight);
+        this.ctx.lineTo(x, y + hexHeight);
+        this.ctx.closePath();
+
+        if (stroke) {
+            this.ctx.strokeStyle = StrokeStyle.Marked;
+            this.ctx.lineWidth = LineWidth.Marked;
+            this.ctx.stroke();
+        } else {
+            this.ctx.strokeStyle = StrokeStyle.Regular;
+            this.ctx.lineWidth = LineWidth.Regular;
+            this.ctx.stroke();
+        }
+    }
+
+    function drawBlackHexagon(x, y, stroke) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + hexRadius, y);
+        this.ctx.lineTo(x + hexRectangleWidth, y + hexHeight);
+        this.ctx.lineTo(x + hexRectangleWidth, y + hexHeight + sideLength);
+        this.ctx.lineTo(x + hexRadius, y + hexRectangleHeight);
+        this.ctx.lineTo(x, y + sideLength + hexHeight);
+        this.ctx.lineTo(x, y + hexHeight);
+        this.ctx.closePath();
+
+        this.ctx.strokeStyle = StrokeStyle.Black;
+        this.ctx.lineWidth = LineWidth.Regular;
+        this.ctx.fill();
+
+        if (stroke) {
+            this.ctx.strokeStyle = StrokeStyle.Regular;
+            this.ctx.stroke();
+        }
+    }
+
+    function drawImage(img, x, y, sizeX, sizeY) {
+        this.ctx.drawImage(img, x + (hexRectangleWidth - sizeX) / 2, y + (hexRectangleHeight - sizeY) / 2, sizeX, sizeY);
+    }
+
+    function drawTile(tile, x, y) {
+        this.ctx.drawImage(tile, x - hexRectangleWidth, y - 0.75 * hexRectangleHeight, 3 * hexRectangleWidth, 2.5 * hexRectangleHeight);
+    }
+
+    return Map;
+})();

@@ -35,6 +35,8 @@
             }
 
             function loadingImagesFinished() {
+                var map = new Map(aImages);
+
                 //socket.io
                 var host = '{{host}}';
                 var game_number = '{{game_number}}';
@@ -52,11 +54,11 @@
                 });
 
                 socket.on('mapupdate', function(data) {
-                    var map = JSON.parse(data);
+                    var oMapData = JSON.parse(data);
+                    map.update(oMapData);
+                    map.drawAll();
+                    map.scrollTo(6, 28);
 
-                    fnDrawAll(aImages, map);
-//                    jQuery('.mapcontainer').scrollLeft(1000);
-//                    jQuery('.mapcontainer').scrollTop(1000);
                 });
                 jQuery('#loading').hide();
 
