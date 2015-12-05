@@ -34,9 +34,9 @@ Game.prototype.isFull = function() {
     return this.players.length === this.requiredPlayers;
 };
 
-Game.prototype.getPlayerPosition = function(username) {
-    console.log('searching player: ' + username);
-  return this.players.indexOf(username);
+Game.prototype.getPlayer = function(username) {
+    var iPlayerIndex = this.players.indexOf(username);
+    return { position: iPlayerIndex, square: this.map.players[iPlayerIndex].square };
 };
 
 Game.prototype.playerMove = function(player, x, y) {

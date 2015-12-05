@@ -35,30 +35,31 @@
             }
 
             function loadingImagesFinished() {
-                var map = new Map(aImages, parseInt('{{player}}'));
-
-                //socket.io
                 var host = '{{host}}';
                 var game_number = '{{game_number}}';
                 var username = '{{user.username}}';
-                var player = '{{player}}';
-                console.log('player_pos: ' + player);
+                var playerPos = parseInt('{{playerPos}}');
+                var playerX = parseInt('{{mapX}}');
+                var playerY = parseInt('{{mapY}}');
+                console.log('player_pos: ' + playerPos);
                 console.log('user.username: ' + username);
 
+                var map = new Map(aImages, playerPos);
+                map.scrollTo(playerX, playerY);
+
+                //socket.io
                 var socket = io.connect(host + "/game");
 
                 socket.on('connect', function() {
                     console.log('Conncetion Established !');
 
-                    socket.emit('creategamechannel', {username: username, player: player, game_number: game_number});
+                    socket.emit('creategamechannel', {username: username, player: playerPos, game_number: game_number});
                 });
 
                 socket.on('mapupdate', function(data) {
                     var oMapData = JSON.parse(data);
                     map.update(oMapData);
                     map.drawAll();
-                    map.scrollTo(6, 28);
-
                 });
                 jQuery('#loading').hide();
 
@@ -67,11 +68,11 @@
                     var toX = $('#toX').val(),
                             toY = $('#toY').val();
 
-                    socket.emit('playermove', { game_number: game_number, player: player, x: toX, y: toY});
+                    socket.emit('playermove', { game_number: game_number, player: playerPos, x: toX, y: toY});
                 });
 
                 $('.mapcontainer').on("playermove", function(event, params) {
-                    socket.emit('playermove', { game_number: game_number, player: player, x: params.x, y: params.y});
+                    socket.emit('playermove', { game_number: game_number, player: playerPos, x: params.x, y: params.y});
                 });
             }
 
