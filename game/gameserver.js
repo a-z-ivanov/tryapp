@@ -35,5 +35,5 @@ GameServer.prototype.findGame = function(gameNumber) {
 
 GameServer.prototype.White_List_Properties_All_Games = [
     "games",
-        "game_number", "requiredPlayers", "players"
+        "game_number", "requiredPlayers", "players", "user"
 ];

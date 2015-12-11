@@ -52,6 +52,8 @@ var Map = (function() {
         initAllSquares.call(this);
         initRevealedSquares.call(this);
         initMapObjects.call(this);
+        initMapTerrains.call(this);
+        console.log(JSON.stringify(this.mTerrains, '\t'));
     };
 
     Map.prototype.scrollTo = function(x, y) {
@@ -78,6 +80,29 @@ var Map = (function() {
     Map.prototype.isActivePlayer = function(x, y) {
         return this.oMapData.players[this.iActivePlayerIndex].square.x === x
                 && this.oMapData.players[this.iActivePlayerIndex].square.y === y;
+    };
+
+    Map.prototype.isSquareNextToSqaure = function(x1, y1, x2, y2) {
+        var aSquares = getSquaresFromCenter.call(this, x1, y1);
+        return aSquares.indexOf(x2.toString() + "_" + y2.toString()) !== -1;
+    };
+
+    Map.prototype.isSquareNextToActivePlayer = function(x, y) {
+        return this.isSquareNextToSqaure(
+            this.oMapData.players[this.iActivePlayerIndex].square.x,
+            this.oMapData.players[this.iActivePlayerIndex].square.y,
+            x,
+            y
+        );
+    };
+
+    Map.prototype.getMovePointsFromSquare = function(x, y) {
+        var key = x.toString() + "_" + y.toString();
+        if (this.mTerrains[key]) {
+            return this.mTerrains[key].move;
+        } else {
+            return 1000;
+        }
     };
 
     function initRevealedCenters() {
@@ -138,7 +163,7 @@ var Map = (function() {
                         var objY = y + obj.yOffset;
 
 
-                        if (y % 2 === 0) { //even
+                        if (y % 2 === 0 && obj.yOffset !== 0) { //even centers
                             objX -= 1;
                         }
 
@@ -148,6 +173,49 @@ var Map = (function() {
                     }
                 }
             }
+        }
+    }
+
+    function initMapTerrains() {
+        this.mTerrains = {};
+
+        if (this.oMapData) {
+            for (var i = 0; i < this.oMapData.centers.length; i++) {
+                if (this.oMapData.centers[i].tile !== undefined && this.oMapData.squares[this.oMapData.centers[i].tile.toString()]) {
+                    var x = this.oMapData.centers[i].x;
+                    var y = this.oMapData.centers[i].y;
+                    var tileTerrains = this.oMapData.squares[this.oMapData.centers[i].tile.toString()];
+
+                    for (var j = 0; j < tileTerrains.length; j++) {
+                        var obj = tileTerrains[j];
+                        var objX = x + obj.xOffset;
+                        var objY = y + obj.yOffset;
+
+                        if (y % 2 === 0 && obj.yOffset !== 0) { //even centers
+                            objX -= 1;
+                        }
+
+                        var key = objX.toString() + "_" + objY.toString();
+
+                        this.mTerrains[key] = { x: objX, y: objY, terrain: obj.terrain, move: getMovePointsFromTerrain.call(this, obj.terrain) };
+                    }
+                }
+            }
+        }
+    }
+
+    function getMovePointsFromTerrain(sTerrain) {
+        switch (sTerrain) {
+            case "plain":
+                return 2;
+            case "water":
+                return 1000;
+            case "forest":
+                return 3;
+            case "hill":
+                return 3;
+            default:
+                return 5;
         }
     }
 
@@ -203,6 +271,8 @@ var Map = (function() {
             screenY = hexY * (hexHeight + sideLength),
             strokeStyle = StrokeStyle.Marked;
 
+        //alert(hexX + " " + hexY);
+
         // Check if the mouse's coords are on the board
         if (hexX >= 0 && hexX < boardWidth && hexY >= 0 && hexY < boardHeight) {
             this.drawAll();
@@ -217,8 +287,11 @@ var Map = (function() {
 
             drawHexagon.call(this, screenX, screenY, strokeStyle, LineWidth.Marked);
 
-            if (this.activePlayerMarked && !this.isActivePlayer(hexX, hexY)) {
-                this.$mapContainer.trigger( "playermove", { x: hexX, y: hexY });
+            if (!this.isActivePlayer(hexX, hexY)) {
+                if (this.activePlayerMarked && this.isSquareNextToActivePlayer(hexX, hexY)) {
+                    this.$mapContainer.trigger( "requestmove", { x: hexX, y: hexY, pointsNeeded: this.getMovePointsFromSquare(hexX, hexY) });
+                }
+
                 this.activePlayerMarked = false;
             }
         }

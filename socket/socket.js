@@ -50,15 +50,34 @@ module.exports = function(io, gameServer) {
                 var game = gameServer.findGame(parseInt(data.game_number, 10));
 
                 socket.emit('mapupdate', JSON.stringify(game.map));
+                socket.emit('playerupdate', JSON.stringify(game.getPlayerByPosition(parseInt(data.player, 10))));
             });
 
-            //socket.emit('playermove', { game_number: game_number, player: player, x: toX, y: toY});
-            socket.on('playermove', function(data) {
-                var game = gameServer.findGame(parseInt(data.game_number, 10));
-                game.playerMove(parseInt(data.player,10), parseInt(data.x), parseInt(data.y));
+            //socket.emit('move', { game_number: game_number, player: playerPos, x: toX, y: toY, spentPoints: 2 });
+            socket.on('move', function(data) {
+                var game = gameServer.findGame(parseInt(data.game_number, 10)),
+                    iPlayerPos = parseInt(data.player,10),
+                    oPlayer = game.getPlayerByPosition(iPlayerPos);
+
+                console.log("player get: ", JSON.stringify(oPlayer));
+
+                game.playerMove(iPlayerPos, parseInt(data.x, 10), parseInt(data.y, 10));
+                oPlayer.move -= parseInt(data.spentPoints, 10);
 
                 socket.broadcast.to(data.game_number).emit('mapupdate', JSON.stringify(game.map));
                 socket.emit('mapupdate', JSON.stringify(game.map));
+                socket.emit('playerupdate', JSON.stringify(oPlayer));
+            });
+
+            //socket.emit('playcard', { game_number: game_number, player: playerPos, cards: ["1", "3", "5"] });
+            socket.on('playcard', function(data) {
+                var game = gameServer.findGame(parseInt(data.game_number, 10)),
+                    iPlayerPos = parseInt(data.player,10),
+                    oPlayer = game.playCards(iPlayerPos, data.cards);
+
+                //as a result from playing a card, the player gets move or attack points, abilities
+                //update the player while is his move
+                socket.emit('playerupdate', JSON.stringify(oPlayer));
             });
         });
 };

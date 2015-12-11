@@ -25,7 +25,7 @@
                 for(var j = 0; j < games[i].requiredPlayers; j++) {
                     var playerName = "";
                     if (j < games[i].players.length) {
-                        playerName = games[i].players[j];
+                        playerName = games[i].players[j].user;
                     }
                     sLI += "<span>";
                     sLI += playerName;
@@ -39,10 +39,18 @@
 
         socket.on('startgame', function(data) {
             var game = JSON.parse(data);
+			var bPlayerFound;
 
             console.log(data);
 
-            if (game.players.indexOf(username) !== -1) {
+			for (var i = 0; i < game.players.length; i++) {
+				if (game.players[i].user === username) {
+					bPlayerFound = true;
+					break;
+				}
+			}
+
+            if (bPlayerFound) {
                 setTimeout(function() {
                     window.location = "/home/" + game.game_number;
                 }, 1000);

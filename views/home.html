@@ -14,14 +14,16 @@
             <canvas id="hexmap" width="2700" height="2500"></canvas>
         </div>
 
-        <input id="toX" value="0"/>
-        <input id="toY" value="0"/>
-        <button id="btnMove">Move</button>
+        <input id="inputP1" value="0"/>
+        <input id="inputP2" value="0"/>
+        <button id="btnDo">Play Cards</button>
 
         <script src="../js/jquery-1.11.3.js"></script>
         <script src="../js/hexagons.js"></script>
         <script language="javascript">
             var aImages = [];
+            var map;
+
             function loadSprite(src) {
                 var deferred = jQuery.Deferred();
                 var sprite = new Image();
@@ -41,10 +43,11 @@
                 var playerPos = parseInt('{{playerPos}}');
                 var playerX = parseInt('{{mapX}}');
                 var playerY = parseInt('{{mapY}}');
+                var oPlayer;
                 console.log('player_pos: ' + playerPos);
                 console.log('user.username: ' + username);
 
-                var map = new Map(aImages, playerPos);
+                map = new Map(aImages, playerPos);
                 map.scrollTo(playerX, playerY);
 
                 //socket.io
@@ -61,18 +64,30 @@
                     map.update(oMapData);
                     map.drawAll();
                 });
+
+                socket.on('playerupdate', function(data) {
+                    oPlayer = JSON.parse(data);
+
+                    console.log("Player updated!");
+                    console.log(JSON.stringify(oPlayer, '\t'));
+                });
+
                 jQuery('#loading').hide();
 
                 //interactions
-                $(document).on('click', '#btnMove', function(e) {
-                    var toX = $('#toX').val(),
-                            toY = $('#toY').val();
+                jQuery(document).on('click', '#btnDo', function(e) {
+                    var p1 = $('#inputP1').val(),
+                        p2 = $('#inputP2').val();
 
-                    socket.emit('playermove', { game_number: game_number, player: playerPos, x: toX, y: toY});
+                    socket.emit('playcard', { game_number: game_number, player: playerPos, cards: [ p1 ] });
                 });
 
-                $('.mapcontainer').on("playermove", function(event, params) {
-                    socket.emit('playermove', { game_number: game_number, player: playerPos, x: params.x, y: params.y});
+                jQuery('.mapcontainer').on("requestmove", function(event, params) {
+                    if (params.pointsNeeded <= oPlayer.move) {
+                        socket.emit('move', {game_number: game_number, player: playerPos, x: params.x, y: params.y, spentPoints: params.pointsNeeded });
+                    } else {
+                        alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
+                    }
                 });
             }
 

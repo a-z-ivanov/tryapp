@@ -47,7 +47,7 @@ module.exports = function(passport, config, gameServer){
 
         var iGameId = parseInt(req.params.game_id, 10);
         var game = gameServer.findGame(iGameId);
-        var player = game.getPlayer(req.user.username);
+        var player = game.getPlayerPositionAndSquare(req.user.username);
         res.render('home', { user: req.user, host: config.host, game_number: iGameId, playerPos: player.position, mapX: player.square.x, mapY: player.square.y});
     });
 

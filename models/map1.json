@@ -224,6 +224,35 @@
       "y": 10
     }
   ],
+  "squares": {
+    "0": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "plain" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "water" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "water" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "water" }
+    ],
+    "1": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "water" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "plain" }
+    ],
+    "2": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "plain" }
+    ]
+  },
   "objects": {
     "1": [{ "xOffset": 0, "yOffset": -1, "objectType": "monster", "picOffset": 29 }],
     "2": [{ "xOffset": 0, "yOffset": -1, "objectType": "monster", "picOffset": 31 }]
