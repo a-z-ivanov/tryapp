@@ -79,5 +79,22 @@ module.exports = function(io, gameServer) {
                 //update the player while is his move
                 socket.emit('playerupdate', JSON.stringify(oPlayer));
             });
+
+            socket.on('save', function(data) {
+                gameServer.saveGame(parseInt(data.game_number, 10));
+                //emit and broadcast message for successful save
+            });
+
+            socket.on('load', function(data) {
+                gameServer.loadGame(parseInt(data.game_number, 10), function(game) {
+                    var iPlayerPos = parseInt(data.player,10),
+                        oPlayer = game.getPlayerByPosition(iPlayerPos);
+
+                    socket.broadcast.to(data.game_number).emit('mapupdate', JSON.stringify(game.map));
+                    //socket.broadcast.to(data.game_number).emit('playerupdate', game.players); //how to update all players
+                    socket.emit('mapupdate', JSON.stringify(game.map));
+                    socket.emit('playerupdate', JSON.stringify(oPlayer));
+                });
+            });
         });
 };

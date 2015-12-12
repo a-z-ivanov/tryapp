@@ -17,6 +17,8 @@
         <input id="inputP1" value="0"/>
         <input id="inputP2" value="0"/>
         <button id="btnDo">Play Cards</button>
+        <button id="btnSave">Save</button>
+        <button id="btnLoad">Load</button>
 
         <script src="../js/jquery-1.11.3.js"></script>
         <script src="../js/hexagons.js"></script>
@@ -80,6 +82,14 @@
                         p2 = $('#inputP2').val();
 
                     socket.emit('playcard', { game_number: game_number, player: playerPos, cards: [ p1 ] });
+                });
+
+                jQuery(document).on('click', '#btnSave', function(e) {
+                    socket.emit('save', { game_number: game_number });
+                });
+
+                jQuery(document).on('click', '#btnLoad', function(e) {
+                    socket.emit('load', { game_number: game_number, player: playerPos });
                 });
 
                 jQuery('.mapcontainer').on("requestmove", function(event, params) {

@@ -1,4 +1,5 @@
 var Game = require('./game.js');
+var GameModel = require('../models/gamemodel.js');
 
 module.exports = GameServer;
 
@@ -30,6 +31,57 @@ GameServer.prototype.findGame = function(gameNumber) {
 
     return this.games.find(function(game){
         return game.getNumber() === gameNumber;
+    });
+};
+
+GameServer.prototype.loadGame = function(gameNumber, callback) {
+    var game = this.findGame(gameNumber);
+
+    GameModel.findOne({ 'gamenumber' :  gameNumber }, function(err, gameModel) {
+        // In case of any error, return using the done method
+        if (err){
+            console.log('Could not find game: ' + err);
+            return done(err);
+        }
+
+        // game does not exists in the db
+        if (gameModel) {
+            game.players = gameModel.game.players;
+            game.map = gameModel.game.map;
+
+            callback(game);
+        }
+    });
+};
+
+GameServer.prototype.saveGame = function(gameNumber) {
+    var game = this.findGame(gameNumber);
+
+    GameModel.findOne({ 'gamenumber' :  gameNumber }, function(err, gameModel) {
+        // In case of any error, return using the done method
+        if (err){
+            console.log('Could not find game: ' + err);
+            return done(err);
+        }
+
+        // game does not exists in the db
+        if (!gameModel) {
+            gameModel = new GameModel();
+            gameModel.gamenumber = gameNumber;
+            gameModel.started = game.started;
+        }
+
+        gameModel.game = game;
+        gameModel.timestamp = new Date();
+
+        // save the user
+        gameModel.save(function(err) {
+            if (err){
+                console.log('Could not save game: '+err);
+                throw err;
+            }
+            console.log('Game ' + game.game_number + ' saved succesfully.');
+        });
     });
 };
 

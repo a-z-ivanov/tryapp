@@ -8,6 +8,7 @@ function Game(gameNumber, requiredPlayers) {
     this.requiredPlayers = requiredPlayers;
     this.players = [];
     this.map = JSON.parse(JSON.stringify(initialMap));
+    this.started = false;
 }
 
 Game.prototype.join = function(userName) {
