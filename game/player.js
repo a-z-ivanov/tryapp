@@ -27,7 +27,6 @@ function Player(user, position) {
     };
 
     console.log("Player created!");
-    console.log(JSON.stringify(this, '\t'));
 }
 
 Player.Actions = {
@@ -38,10 +37,15 @@ Player.Actions = {
 };
 
 Player.prototype.update = function(data) {
+    this.deck = data.deck;
+    this.hand = data.hand;
+    this.influence = data.influence;
     this.move = data.move;
     this.meleeAttack = data.meleeAttack;
     this.rangedAttack = data.rangedAttack;
     this.siegeAttack = data.siegeAttack;
+    this.mana = data.mana;
+    this.crystals = data.crystals;
 };
 
 Player.prototype.pay = function(manaColor, amount) {

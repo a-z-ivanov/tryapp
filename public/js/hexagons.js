@@ -53,7 +53,7 @@ var Map = (function() {
         initRevealedSquares.call(this);
         initMapObjects.call(this);
         initMapTerrains.call(this);
-        console.log(JSON.stringify(this.mTerrains, '\t'));
+        //console.log(JSON.stringify(this.mTerrains, '\t'));
     };
 
     Map.prototype.scrollTo = function(x, y) {

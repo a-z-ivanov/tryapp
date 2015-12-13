@@ -13,7 +13,7 @@ function GameServer() {
     ];
 }
 
-GameServer.Default_Required_Players = 4;
+GameServer.Default_Required_Players = 2;
 
 GameServer.prototype.getGames = function() {
     return this.games;
@@ -26,17 +26,15 @@ GameServer.prototype.newGame = function(userName) {
 };
 
 GameServer.prototype.findGame = function(gameNumber) {
-    console.log('finding game: ' + gameNumber);
-    console.log("typeof gameNumber: " + typeof gameNumber);
+    //console.log('finding game: ' + gameNumber);
+    //console.log("typeof gameNumber: " + typeof gameNumber);
 
-    return this.games.find(function(game){
+    return this.games.find(function(game) {
         return game.getNumber() === gameNumber;
     });
 };
 
 GameServer.prototype.loadGame = function(gameNumber, callback) {
-    var game = this.findGame(gameNumber);
-
     GameModel.findOne({ 'gamenumber' :  gameNumber }, function(err, gameModel) {
         // In case of any error, return using the done method
         if (err){
@@ -46,12 +44,16 @@ GameServer.prototype.loadGame = function(gameNumber, callback) {
 
         // game does not exists in the db
         if (gameModel) {
-            game.players = gameModel.game.players;
-            game.map = gameModel.game.map;
+            var game = this.findGame(gameNumber);
 
+            if (!game) {
+                this.games.push(new Game(gameNumber, gameModel.game.requiredPlayers));
+                game = this.games[this.games.length - 1];
+            }
+            game.update(gameModel.game);
             callback(game);
         }
-    });
+    }.bind(this));
 };
 
 GameServer.prototype.saveGame = function(gameNumber) {

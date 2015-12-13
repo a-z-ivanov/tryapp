@@ -11,6 +11,17 @@ function Game(gameNumber, requiredPlayers) {
     this.started = false;
 }
 
+Game.prototype.update = function(data) {
+    this.players = [];
+    for (var i = 0; i < data.players.length; i++ ) {
+        this.players.push(new Player(data.players[i].user, data.players[i].position));
+        this.players[i].update(data.players[i]);
+    }
+
+    this.map = data.map;
+    this.started = data.started;
+};
+
 Game.prototype.join = function(userName) {
     if (this.players.length < this.requiredPlayers) {
         this.players.push(new Player(userName, this.players.length));

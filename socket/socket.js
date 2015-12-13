@@ -59,8 +59,6 @@ module.exports = function(io, gameServer) {
                     iPlayerPos = parseInt(data.player,10),
                     oPlayer = game.getPlayerByPosition(iPlayerPos);
 
-                console.log("player get: ", JSON.stringify(oPlayer));
-
                 game.playerMove(iPlayerPos, parseInt(data.x, 10), parseInt(data.y, 10));
                 oPlayer.move -= parseInt(data.spentPoints, 10);
 
@@ -74,6 +72,8 @@ module.exports = function(io, gameServer) {
                 var game = gameServer.findGame(parseInt(data.game_number, 10)),
                     iPlayerPos = parseInt(data.player,10),
                     oPlayer = game.playCards(iPlayerPos, data.cards);
+
+                console.log("playing cards...", data.cards);
 
                 //as a result from playing a card, the player gets move or attack points, abilities
                 //update the player while is his move
