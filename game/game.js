@@ -21,6 +21,7 @@ Game.prototype.update = function(data) {
 
     this.map = data.map;
     this.started = data.started;
+    this.timestamp = new Date();
 };
 
 Game.prototype.updateTimestapm = function() {

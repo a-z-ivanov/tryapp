@@ -58,7 +58,7 @@
                 socket.on('connect', function() {
                     console.log('Conncetion Established !');
 
-                    socket.emit('creategamechannel', {username: username, player: playerPos, game_number: game_number});
+                    socket.emit('creategamechannel', { username: username, player: playerPos, game_number: game_number });
                 });
 
                 socket.on('mapupdate', function(data) {
@@ -80,20 +80,20 @@
                     var p1 = $('#inputP1').val(),
                         p2 = $('#inputP2').val();
 
-                    socket.emit('playcard', { game_number: game_number, player: playerPos, cards: [ p1 ] });
+                    socket.emit('playcard', { cards: [ p1 ] });
                 });
 
                 jQuery(document).on('click', '#btnSave', function(e) {
-                    socket.emit('save', { game_number: game_number });
+                    socket.emit('save');
                 });
 
                 jQuery(document).on('click', '#btnLoad', function(e) {
-                    socket.emit('load', { game_number: game_number, player: playerPos });
+                    socket.emit('load');
                 });
 
                 jQuery('.mapcontainer').on("requestmove", function(event, params) {
                     if (params.pointsNeeded <= oPlayer.move) {
-                        socket.emit('move', {game_number: game_number, player: playerPos, x: params.x, y: params.y, spentPoints: params.pointsNeeded });
+                        socket.emit('move', { x: params.x, y: params.y, spentPoints: params.pointsNeeded });
                     } else {
                         alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
                     }

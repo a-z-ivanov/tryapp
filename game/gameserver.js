@@ -4,22 +4,16 @@ var GameModel = require('../models/gamemodel.js');
 module.exports = GameServer;
 
 function GameServer() {
-    this.games = [
-        //{
-        //    game_number:123451234,
-        //    requiredPlayers: 4,
-        //    players: [username, username2]
-        //}
-    ];
+    this.games = [];
 
-    //remove inactive games every 15 minutes
+    // every 15 minutes, remove games that had been inactive for at least 10 minutes
     setInterval(function() {
         console.log("Cleaning inactive games...");
 
         var d = new Date();
 
         for (var i = this.games.length - 1; i >= 0 ; i--) {
-            if (this.games[i].timestamp.getTime() + 1 * 60 * 1000 < d.getTime()) {
+            if (this.games[i].timestamp.getTime() + 10 * 60 * 1000 < d.getTime()) {
                 console.log("Game " + this.games[i].game_number + " is saved and unloaded.");
                 this.saveGame(this.games[i].game_number);
                 this.games.splice(i, 1);
@@ -27,7 +21,7 @@ function GameServer() {
                 console.log("Game " + this.games[i].game_number + " is staying.");
             }
         }
-    }.bind(this), 1 * 60 * 1000);
+    }.bind(this), 15 * 60 * 1000);
 }
 
 GameServer.Default_Required_Players = 2;
@@ -52,14 +46,7 @@ GameServer.prototype.newGame = function(userName, callback) {
     }.bind(this));
 };
 
-GameServer.prototype.findGame = function(gameNumber) {
-    //console.log('finding game: ' + gameNumber);
-    //console.log("typeof gameNumber: " + typeof gameNumber);
 
-    return this.games.find(function(game) {
-        return game.getNumber() === gameNumber;
-    });
-};
 
 GameServer.prototype.loadGame = function(gameNumber, callback) {
     GameModel.findOne({ 'gamenumber' :  gameNumber }, function(err, gameModel) {
@@ -78,9 +65,33 @@ GameServer.prototype.loadGame = function(gameNumber, callback) {
                 game = this.games[this.games.length - 1];
             }
             game.update(gameModel.game);
+
+            console.log("Game " + gameNumber + " loaded!");
             callback(game);
         }
     }.bind(this));
+};
+
+GameServer.prototype.getGame = function(gameNumber, callback) {
+    var game = this.findGame(gameNumber);
+
+    if (game) {
+        callback(game);
+    } else {
+        this.loadGame(gameNumber, callback);
+    }
+};
+
+GameServer.prototype.findGame = function(gameNumber) {
+    var game = this.games.find(function(game) {
+        return game.getNumber() === gameNumber;
+    });
+
+    if (game) {
+        game.updateTimestapm();
+    }
+
+    return game;
 };
 
 GameServer.prototype.saveGame = function(gameNumber) {

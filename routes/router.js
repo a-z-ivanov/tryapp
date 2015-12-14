@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var GameModel = require('../models/gamemodel.js');
 
 function securePages(req, res, next){
     if(req.isAuthenticated()){
@@ -38,7 +39,17 @@ module.exports = function(passport, config, gameServer){
 
     /* GET Home Page */
     router.get('/lobby', securePages, function(req, res) {
-        res.render('lobby', { user: req.user, host: config.host });
+        console.log("Username: " + req.user.username);
+
+        // if this user has started games, put him in the last one
+        // if not - show him the lobby
+        GameModel.find({'game.players.user': req.user.username, 'game.started': true }, function(err, games) {
+            if (games && games.length) {
+                res.redirect('/home/' + games[games.length - 1].gamenumber);
+            } else {
+                res.render('lobby', {user: req.user, host: config.host});
+            }
+        });
     });
 
     /* GET Home Page */
@@ -46,9 +57,10 @@ module.exports = function(passport, config, gameServer){
         console.log("User " + req.user + " redirected to /home");
 
         var iGameId = parseInt(req.params.game_id, 10);
-        var game = gameServer.findGame(iGameId);
-        var player = game.getPlayerPositionAndSquare(req.user.username);
-        res.render('home', { user: req.user, host: config.host, game_number: iGameId, playerPos: player.position, mapX: player.square.x, mapY: player.square.y});
+        gameServer.getGame(iGameId, function(game) {
+            var player = game.getPlayerPositionAndSquare(req.user.username);
+            res.render('home', { user: req.user, host: config.host, game_number: iGameId, playerPos: player.position, mapX: player.square.x, mapY: player.square.y});
+        });
     });
 
     /* Handle Logout */
