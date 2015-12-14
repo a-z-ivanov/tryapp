@@ -4,6 +4,7 @@ var Player = require('./player.js');
 module.exports = Game;
 
 function Game(gameNumber, requiredPlayers) {
+    this.timestamp = new Date();
     this.game_number = gameNumber;
     this.requiredPlayers = requiredPlayers;
     this.players = [];
@@ -20,6 +21,10 @@ Game.prototype.update = function(data) {
 
     this.map = data.map;
     this.started = data.started;
+};
+
+Game.prototype.updateTimestapm = function() {
+    this.timestamp = new Date();
 };
 
 Game.prototype.join = function(userName) {

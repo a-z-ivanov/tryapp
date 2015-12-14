@@ -2,17 +2,17 @@ module.exports = function(io, gameServer) {
     var gamelist = io.of('/gamelist')
         .on('connection', function(socket) {
             console.log('Socket.io connection to gamelist established!');
-            var games = gameServer.getGames();
+            var games = gameServer.getLobbyGames();
 
             socket.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
 
             socket.on('newgame', function(data) {
                 console.log(data.username + " creates a new game!");
 
-                gameServer.newGame(data.username);
-
-                socket.broadcast.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
-                socket.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
+                gameServer.newGame(data.username, function(games) {
+                    socket.broadcast.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
+                    socket.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
+                });
             });
 
             socket.on('joingame', function(data) {
@@ -20,14 +20,17 @@ module.exports = function(io, gameServer) {
                 var currentGame = gameServer.findGame(data.game_number);
 
                 if (currentGame.join(data.username)) {
-                    socket.broadcast.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
-                    socket.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
-
                     if (currentGame.isFull()) {
                         //start game
+                        currentGame.started = true;
+                        gameServer.saveGame(data.game_number);
                         socket.broadcast.emit('startgame', JSON.stringify(currentGame, currentGame.White_List_Properties_No_Map));
                         socket.emit('startgame', JSON.stringify(currentGame, currentGame.White_List_Properties_No_Map));
                     }
+
+                    games = gameServer.getLobbyGames();
+                    socket.broadcast.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
+                    socket.emit('gameroomupdate', JSON.stringify(games, gameServer.White_List_Properties_All_Games));
                 } else {
                     //message game is full
                 }
