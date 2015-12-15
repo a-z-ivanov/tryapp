@@ -12,7 +12,10 @@
 
         <div class="mapcontainer">
             <canvas id="hexmap" width="2700" height="2500"></canvas>
+            <span id="tooltip" style="position: absolute; z-index:500; background-color:white; display: none; padding: 5px;"></span>
         </div>
+
+
 
         <input id="inputP1" value="0"/>
         <input id="inputP2" value="0"/>
@@ -94,6 +97,14 @@
                 jQuery('.mapcontainer').on("requestmove", function(event, params) {
                     if (params.pointsNeeded <= oPlayer.move) {
                         socket.emit('move', { x: params.x, y: params.y, spentPoints: params.pointsNeeded });
+                    } else {
+                        alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
+                    }
+                });
+
+                jQuery('.mapcontainer').on("requestreveal", function(event, params) {
+                    if (params.pointsNeeded <= oPlayer.move) {
+                        socket.emit('reveal', { x: params.x, y: params.y, spentPoints: params.pointsNeeded });
                     } else {
                         alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
                     }

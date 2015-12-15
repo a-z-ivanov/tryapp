@@ -70,6 +70,20 @@ module.exports = function(io, gameServer) {
                 });
             });
 
+            //socket.emit('reveal', { x: 2, y: 5, spentPoints: 2 });
+            socket.on('reveal', function(data) {
+                gameServer.getGame(socket.game_number, function(game) {
+                    var oPlayer = game.getPlayerByPosition(socket.player);
+
+                    game.playerReveal(parseInt(data.x, 10), parseInt(data.y, 10));
+                    oPlayer.move -= parseInt(data.spentPoints, 10);
+
+                    socket.broadcast.to(socket.game_number).emit('mapupdate', JSON.stringify(game.map));
+                    socket.emit('mapupdate', JSON.stringify(game.map));
+                    socket.emit('playerupdate', JSON.stringify(oPlayer));
+                });
+            });
+
             //socket.emit('playcard', { cards: ["1", "3", "5"] });
             socket.on('playcard', function(data) {
                 gameServer.getGame(socket.game_number, function(game) {

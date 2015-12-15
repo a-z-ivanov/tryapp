@@ -55,6 +55,15 @@ Game.prototype.playerMove = function(iPlayerPos, x, y) {
     this.map.players[iPlayerPos].square = { x: x, y: y};
 };
 
+Game.prototype.playerReveal = function(centerX, centerY) {
+    for (var i = 0; i < this.map.centers.length; i++) {
+        if (centerX === this.map.centers[i].x && centerY === this.map.centers[i].y) {
+            this.map.centers[i].tile = 2; //get a new tile
+            break;
+        }
+    }
+};
+
 Game.prototype.getPlayerPositionByUsername = function(username) {
     for (var i = 0; i < this.players.length; i++) {
         if (this.players[i].user === username) {

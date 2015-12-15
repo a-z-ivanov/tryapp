@@ -32,6 +32,8 @@ var Map = (function() {
         this.canvas = document.getElementById('hexmap');
         this.ctx = this.canvas.getContext ? this.canvas.getContext('2d') : null;
         this.canvas.addEventListener("mousedown", handleCanvasMouseDown.bind(this));
+        this.canvas.addEventListener("mousemove", handleCanvasMouseMove.bind(this));
+        this.canvas.addEventListener("mouseleave", handleCanvasMouseLeave.bind(this));
     }
 
     Map.prototype.drawAll = function() {
@@ -96,14 +98,86 @@ var Map = (function() {
         );
     };
 
+    Map.prototype.getCenterFromSquare = function(x, y) {
+        for (var i = 0; i < this.oMapData.centers.length; i++) {
+            if (this.isSquareNextToSqaure(this.oMapData.centers[i].x, this.oMapData.centers[i].y, x, y)) {
+                return this.oMapData.centers[i];
+            }
+        }
+    };
+
     Map.prototype.getMovePointsFromSquare = function(x, y) {
         var key = x.toString() + "_" + y.toString();
         if (this.mTerrains[key]) {
             return this.mTerrains[key].move;
+        } else if (!this.isOutside(x, y) && !this.isRevealed(x, y)) {
+            return 2;
         } else {
             return 1000;
         }
     };
+
+    Map.prototype.getInfoForSquare = function(x, y) {
+        var key = x.toString() + "_" + y.toString(),
+            sTooltip = "";
+        if (this.mObjects[key]) {
+            var objects = this.mObjects[key];
+            for (var i = 0; i < objects.length; i++) {
+                sTooltip += "<strong>" + capitalizeFirstLetter(objects[i].objectType) + ":</strong> ";
+
+                switch (objects[i].objectType) {
+                    case "portal":
+                        sTooltip += "The door to this hostile world.";
+                        break;
+                    case "monster":
+                        sTooltip += "Danger is here.";
+                        break;
+                    case "magical glade":
+                        sTooltip += "You can rest here for a while,<br>heal yourself or even practice some magic.";
+                        break;
+                    case "village":
+                        sTooltip += "Locals live here. They can be of<br>use, but only if they trust you.";
+                        break;
+                    case "green crystal mine":
+                    case "blue crystal mine":
+                    case "white crystal mine":
+                    case "red crystal mine":
+                        sTooltip += "Camping here? Maybe<br>mine some crystals too.";
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        if (this.mTerrains[key]) {
+            if (sTooltip) {
+                sTooltip += "<br>";
+            }
+
+            sTooltip += "<strong>" + capitalizeFirstLetter(this.mTerrains[key].terrain) + ":</strong> ";
+
+            if (this.mTerrains[key].terrain === "water") {
+                sTooltip += "Have a swim, if you dare."
+            } else {
+                sTooltip += this.mTerrains[key].move + " move points.";
+            }
+        }
+
+        if (!sTooltip) {
+            if (this.isOutside(x, y)) {
+                sTooltip += "End of the world.";
+            } else if (!this.isRevealed(x, y)) {
+                sTooltip += "<strong>Unknown:</strong> Dark, scary place.<br><strong>Reveal:</strong> 2 move points.";
+            }
+        }
+
+        return sTooltip;
+    };
+
+    function capitalizeFirstLetter(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
 
     function initRevealedCenters() {
         this.aTileCenters = [];
@@ -169,7 +243,10 @@ var Map = (function() {
 
                         var key = objX.toString() + "_" + objY.toString();
 
-                        this.mObjects[key] = {x: objX, y: objY, objectType: obj.objectType, picOffset: obj.picOffset};
+                        if (!this.mObjects[key]) {
+                            this.mObjects[key] = [];
+                        }
+                        this.mObjects[key].push({x: objX, y: objY, objectType: obj.objectType, picOffset: obj.picOffset});
                     }
                 }
             }
@@ -262,6 +339,53 @@ var Map = (function() {
 
     //need context - bind or call to pass the this instance
 
+    var iPreviousMouseMove;
+    var bToolTipDisplayed;
+    var iid;
+    var sTooltip;
+    function handleCanvasMouseMove(eventInfo) {
+        var x = eventInfo.offsetX || eventInfo.layerX,
+            y = eventInfo.offsetY || eventInfo.layerY,
+            hexY = Math.floor(y / (hexHeight + sideLength)),
+            hexX = Math.floor((x - (hexY % 2) * hexRadius) / hexRectangleWidth),
+            mx = eventInfo.clientX - event.target.clientLeft,
+            my = eventInfo.clientY - event.target.clientTop;
+
+        iPreviousMouseMove = { timeStamp: eventInfo.timeStamp, x: mx, y:my, hexX: hexX, hexY: hexY };
+        if (bToolTipDisplayed) {
+            bToolTipDisplayed = false;
+            $('#tooltip').hide();
+        }
+
+        if (!iid) {
+            iid = setInterval(function () {
+                if (iPreviousMouseMove && iPreviousMouseMove.timeStamp + 1000 < (new Date()).getTime()) {
+                    if (iPreviousMouseMove.hexX >= 0 && iPreviousMouseMove.hexX < boardWidth
+                        && iPreviousMouseMove.hexY >= 0 && iPreviousMouseMove.hexY < boardHeight) {
+                        sTooltip = this.getInfoForSquare(iPreviousMouseMove.hexX, iPreviousMouseMove.hexY);
+                        $('#tooltip').html(sTooltip);
+                        $('#tooltip').css('top', iPreviousMouseMove.y + 10);
+                        $('#tooltip').css('left', iPreviousMouseMove.x + 10);
+                        $('#tooltip').show(300);
+                        bToolTipDisplayed = true;
+                    }
+
+                    if (iid) {
+                        clearInterval(iid);
+                        iid = null;
+                    }
+                }
+            }.bind(this), 1000);
+        }
+    }
+
+    function handleCanvasMouseLeave(eventInfo) {
+        if (iid) {
+            clearInterval(iid);
+            iid = null;
+        }
+    }
+
     function handleCanvasMouseDown(eventInfo) {
         var x = eventInfo.offsetX || eventInfo.layerX,
             y = eventInfo.offsetY || eventInfo.layerY,
@@ -289,7 +413,20 @@ var Map = (function() {
 
             if (!this.isActivePlayer(hexX, hexY)) {
                 if (this.activePlayerMarked && this.isSquareNextToActivePlayer(hexX, hexY)) {
-                    this.$mapContainer.trigger( "requestmove", { x: hexX, y: hexY, pointsNeeded: this.getMovePointsFromSquare(hexX, hexY) });
+                    if (!this.isOutside(hexX, hexY) && !this.isRevealed(hexX, hexY)) {
+                        var center = this.getCenterFromSquare(hexX, hexY);
+                        this.$mapContainer.trigger("requestreveal", {
+                            x: center.x,
+                            y: center.y,
+                            pointsNeeded: this.getMovePointsFromSquare(hexX, hexY)
+                        });
+                    } else {
+                        this.$mapContainer.trigger("requestmove", {
+                            x: hexX,
+                            y: hexY,
+                            pointsNeeded: this.getMovePointsFromSquare(hexX, hexY)
+                        });
+                    }
                 }
 
                 this.activePlayerMarked = false;
@@ -347,18 +484,20 @@ var Map = (function() {
 
     function drawObjects() {
         for (var key in this.mObjects) {
-            var obj = this.mObjects[key];
-            var objPicOffset = obj.picOffset;
+            var objects = this.mObjects[key];
+            for (var i = 0; i < objects.length; i++) {
+                var objPicOffset = objects[i].picOffset;
 
-            if (objPicOffset) { //has pic
-                drawImage.call(
-                    this,
-                    this.aImages[objPicOffset],
-                    obj.x * hexRectangleWidth + ((obj.y % 2) * hexRadius),
-                    obj.y * (sideLength + hexHeight),
-                    1.5 * sideLength,
-                    1.5 * sideLength
-                );
+                if (objPicOffset) { //has pic
+                    drawImage.call(
+                        this,
+                        this.aImages[objPicOffset],
+                        objects[i].x * hexRectangleWidth + ((objects[i].y % 2) * hexRadius),
+                        objects[i].y * (sideLength + hexHeight),
+                        1.5 * sideLength,
+                        1.5 * sideLength
+                    );
+                }
             }
         }
     }

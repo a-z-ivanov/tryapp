@@ -254,8 +254,20 @@
     ]
   },
   "objects": {
-    "1": [{ "xOffset": 0, "yOffset": -1, "objectType": "monster", "picOffset": 29 }],
-    "2": [{ "xOffset": 0, "yOffset": -1, "objectType": "monster", "picOffset": 31 }]
+    "0": [
+      { "xOffset": 0, "yOffset": 0, "objectType": "portal" }
+    ],
+    "1": [
+      { "xOffset": 0, "yOffset": -1, "objectType": "monster", "picOffset": 29 },
+      { "xOffset": 1, "yOffset": 0, "objectType": "village" },
+      { "xOffset": 0, "yOffset": 0, "objectType": "magical glade" }
+    ],
+    "2": [
+      { "xOffset": 0, "yOffset": -1, "objectType": "monster", "picOffset": 31 },
+      { "xOffset": 0, "yOffset": 1, "objectType": "green crystal mine" },
+      { "xOffset": 1, "yOffset": 0, "objectType": "village" },
+      { "xOffset": 1, "yOffset": -1, "objectType": "magical glade" }
+    ]
   },
   "players":[]
 }
