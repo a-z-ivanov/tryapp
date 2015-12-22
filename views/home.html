@@ -10,22 +10,67 @@
             <img id="loading-image" src="../images/loading.gif" alt="Loading..." />
         </div>
 
-        <div class="mapcontainer">
-            <canvas id="hexmap" width="2700" height="2500"></canvas>
-            <span id="tooltip" style="position: absolute; z-index:500; background-color:white; display: none; padding: 5px;"></span>
-        </div>
+        <main>
+            <div class="mapcontainer">
+                <canvas id="hexmap" width="2700" height="2500"></canvas>
+                <span id="tooltip" style="position: absolute; z-index:500; background-color:white; display: none; padding: 5px;"></span>
+            </div>
+            <div class="playareacontainer">
+                <div class="playarea" ondrop="drop(event)" ondragover="allowDrop(event)">
+                </div>
+            </div>
 
+            <div class="hand" ondblclick="movetoplayarea(event)">
+                <img id="img1" src="../images/card_1.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img2" src="../images/card_3.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img3" src="../images/card_4.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img4" src="../images/card_6.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img5" src="../images/card_7.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img11" src="../images/card_1.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img12" src="../images/card_3.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img13" src="../images/card_4.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img14" src="../images/card_6.jpg" draggable="true" ondragstart="drag(event)" />
+                <img id="img15" src="../images/card_7.jpg" draggable="true" ondragstart="drag(event)" />
+            </div>
+        </main>
 
-
-        <input id="inputP1" value="0"/>
-        <input id="inputP2" value="0"/>
-        <button id="btnDo">Play Cards</button>
-        <button id="btnSave">Save</button>
-        <button id="btnLoad">Load</button>
+        <aside>
+            <input id="inputP1" value="0"/>
+            <input id="inputP2" value="0"/>
+            <button id="btnDo">Play Cards</button>
+            <button id="btnSave">Save</button>
+            <button id="btnLoad">Load</button>
+        </aside>
 
         <script src="../js/jquery-1.11.3.js"></script>
         <script src="../js/hexagons.js"></script>
         <script language="javascript">
+            //drag and drop
+
+            function allowDrop(ev) {
+                ev.preventDefault();
+            }
+
+            function drag(ev) {
+                ev.dataTransfer.setData("text", ev.target.id);
+            }
+
+            function drop(ev) {
+                ev.preventDefault();
+                var data = ev.dataTransfer.getData("text");
+                document.getElementsByClassName("playarea")[0].appendChild(document.getElementById(data));
+            }
+
+            function movetoplayarea(ev) {
+                if (ev.target.tagName === "IMG") {
+                    var img = ev.target;
+                    document.getElementsByClassName("hand")[0].removeChild(ev.target);
+                    document.getElementsByClassName("playarea")[0].appendChild(img);
+                }
+            }
+
+            //end drag and drop
+
             var aImages = [];
             var map;
 
