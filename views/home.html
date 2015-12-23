@@ -20,17 +20,7 @@
                 </div>
             </div>
 
-            <div class="hand" ondblclick="movetoplayarea(event)">
-                <img id="img1" src="../images/card_1.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img2" src="../images/card_3.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img3" src="../images/card_4.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img4" src="../images/card_6.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img5" src="../images/card_7.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img11" src="../images/card_1.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img12" src="../images/card_3.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img13" src="../images/card_4.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img14" src="../images/card_6.jpg" draggable="true" ondragstart="drag(event)" />
-                <img id="img15" src="../images/card_7.jpg" draggable="true" ondragstart="drag(event)" />
+            <div class="hand">
             </div>
         </main>
 
@@ -47,27 +37,19 @@
         <script language="javascript">
             //drag and drop
 
-            function allowDrop(ev) {
-                ev.preventDefault();
-            }
-
-            function drag(ev) {
-                ev.dataTransfer.setData("text", ev.target.id);
-            }
-
-            function drop(ev) {
-                ev.preventDefault();
-                var data = ev.dataTransfer.getData("text");
-                document.getElementsByClassName("playarea")[0].appendChild(document.getElementById(data));
-            }
-
-            function movetoplayarea(ev) {
-                if (ev.target.tagName === "IMG") {
-                    var img = ev.target;
-                    document.getElementsByClassName("hand")[0].removeChild(ev.target);
-                    document.getElementsByClassName("playarea")[0].appendChild(img);
-                }
-            }
+//            function allowDrop(ev) {
+//                ev.preventDefault();
+//            }
+//
+//            function drag(ev) {
+//                ev.dataTransfer.setData("text", ev.target.id);
+//            }
+//
+//            function drop(ev) {
+//                ev.preventDefault();
+//                var data = ev.dataTransfer.getData("text");
+//                document.getElementsByClassName("playarea")[0].appendChild(document.getElementById(data));
+//            }
 
             //end drag and drop
 
@@ -91,6 +73,7 @@
                 var game_number = '{{game_number}}';
                 var username = '{{user.username}}';
                 var playerPos = parseInt('{{playerPos}}');
+                var activePlayerPos = parseInt('{{activePlayerPos}}');
                 var playerX = parseInt('{{mapX}}');
                 var playerY = parseInt('{{mapY}}');
                 var oPlayer;
@@ -111,25 +94,76 @@
 
                 socket.on('mapupdate', function(data) {
                     var oMapData = JSON.parse(data);
-                    map.update(oMapData);
-                    map.drawAll();
+                    updateMap(oMapData);
                 });
 
                 socket.on('playerupdate', function(data) {
-                    oPlayer = JSON.parse(data);
+                    var oPlayer = JSON.parse(data);
+
+                    updatePlayer(oPlayer);
+
+                    if (oPlayer.position === playerPos) {
+                        updatePlayArea(oPlayer.playedCards);
+                    }
 
                     console.log("Player updated!");
                 });
 
+                socket.on("gameupdate", function(data) {
+                    var game = JSON.parse(data);
+
+                    updateMap(game.map);
+                    updatePlayer(game.players[playerPos]);
+                    updatePlayArea(game.players[game.activePlayer].playedCards);
+                });
+
+                socket.on("playareaupdate", function(data) {
+                    var cards = JSON.parse(data);
+                    updatePlayArea(cards);
+                });
+
+                function updateMap(oMapData) {
+                    map.update(oMapData);
+                    map.drawAll();
+                }
+
+                function updatePlayArea(cards) {
+                    //update hand area
+                    $(".playarea").html("");
+                    for (var i = 0; i < cards.length; i++) {
+                        var sCardId = cards[i];
+                        var sCardDom = "<img src='../images/card_" + sCardId + ".jpg'/>";
+                        var $Card = $(sCardDom);
+
+                        $Card.data("card", sCardId);
+                        $(".playarea").append($Card);
+                    }
+                }
+
+                function updatePlayer(player) {
+                    oPlayer = player;
+
+                    //update hand area
+                    $(".hand").html("");
+                    for (var i = 0; i < oPlayer.hand.length; i++) {
+                        var sCardId = oPlayer.hand[i];
+                        var sCardDom = "<img src='../images/card_" + sCardId + ".jpg'/>";
+                        var $Card = $(sCardDom);
+
+                        $Card.data("card", sCardId);
+                        $(".hand").append($Card);
+                    }
+                }
+
                 jQuery('#loading').hide();
 
                 //interactions
-                jQuery(document).on('click', '#btnDo', function(e) {
-                    var p1 = $('#inputP1').val(),
-                        p2 = $('#inputP2').val();
-
-                    socket.emit('playcard', { cards: [ p1 ] });
-                });
+//                jQuery(document).on('click', '#btnDo', function(e) {
+//                    var p1 = $('#inputP1').val(),
+//                        p2 = $('#inputP2').val();
+//
+//                    socket.emit('playcard', { cards: [ p1 ] });
+//                });
 
                 jQuery(document).on('click', '#btnSave', function(e) {
                     socket.emit('save');
@@ -152,6 +186,13 @@
                         socket.emit('reveal', { x: params.x, y: params.y, spentPoints: params.pointsNeeded });
                     } else {
                         alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
+                    }
+                });
+
+                jQuery('.hand').on('dblclick', function(event) {
+                    if (event.target.tagName === "IMG") {
+                        var sCardId = jQuery(event.target).data("card");
+                        socket.emit('playcard', { cards: [ sCardId ] });
                     }
                 });
             }

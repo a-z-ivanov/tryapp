@@ -21,7 +21,7 @@
 
 			$('.gamesList').html('');
 			for(var i = 0; i < games.length; i++) {
-				var sLI = "<li class='game'>"
+				var sLI = "<li class='game'>";
                 for(var j = 0; j < games[i].requiredPlayers; j++) {
                     var playerName = "";
                     if (j < games[i].players.length) {

@@ -83,9 +83,14 @@ GameServer.prototype.getGame = function(gameNumber, callback) {
 };
 
 GameServer.prototype.findGame = function(gameNumber) {
-    var game = this.games.find(function(game) {
-        return game.getNumber() === gameNumber;
-    });
+    var game;
+
+    for (var i = 0; i < this.games.length; i++) {
+        if (this.games[i].getNumber() === gameNumber) {
+            game = this.games[i];
+            break;
+        }
+    }
 
     if (game) {
         game.updateTimestapm();
@@ -120,7 +125,7 @@ GameServer.prototype.saveGame = function(gameNumber) {
                 console.log('Could not save game: '+err);
                 throw err;
             }
-            console.log('Game ' + game.game_number + ' saved succesfully.');
+            console.log('Game ' + game.game_number + ' saved successfully.');
         });
     });
 };

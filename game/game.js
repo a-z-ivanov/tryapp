@@ -8,6 +8,7 @@ function Game(gameNumber, requiredPlayers) {
     this.game_number = gameNumber;
     this.requiredPlayers = requiredPlayers;
     this.players = [];
+    this.activePlayer = 0;
     this.map = JSON.parse(JSON.stringify(initialMap));
     this.started = false;
 }
@@ -89,5 +90,5 @@ Game.prototype.playCards = function(iPlayerPosition, aCards) {
 };
 
 Game.prototype.White_List_Properties_No_Map = [
-    "game_number", "requiredPlayers", "players", "user", "hand", "move"
+    "game_number", "requiredPlayers", "players", "user", "hand", "playedCards", "move"
 ];

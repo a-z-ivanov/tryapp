@@ -51,8 +51,7 @@ module.exports = function(io, gameServer) {
                 allUserSockets[socket.username] = socket;
 
                 gameServer.getGame(socket.game_number, function(game) {
-                    socket.emit('mapupdate', JSON.stringify(game.map));
-                    socket.emit('playerupdate', JSON.stringify(game.getPlayerByPosition(socket.player)));
+                    socket.emit('gameupdate', JSON.stringify(game));
                 });
             });
 
@@ -94,6 +93,7 @@ module.exports = function(io, gameServer) {
                     //as a result from playing a card, the player gets move or attack points, abilities
                     //update the player while is his move
                     socket.emit('playerupdate', JSON.stringify(oPlayer));
+                    socket.broadcast.to(socket.game_number).emit('playareaupdate', JSON.stringify(oPlayer.playedCards));
                 });
             });
 
@@ -104,12 +104,8 @@ module.exports = function(io, gameServer) {
 
             socket.on('load', function(data) {
                 gameServer.loadGame(socket.game_number, function(game) {
-                    socket.broadcast.to(socket.game_number).emit('mapupdate', JSON.stringify(game.map));
-                    socket.emit('mapupdate', JSON.stringify(game.map));
-
-                    for (var i = 0; i < game.players.length; i++) {
-                        allUserSockets[game.players[i].user].emit('playerupdate', JSON.stringify(game.players[i]));
-                    }
+                    socket.broadcast.to(socket.game_number).emit('gameupdate', JSON.stringify(game));
+                    socket.emit('gameupdate', JSON.stringify(game));
                 });
             });
         });
