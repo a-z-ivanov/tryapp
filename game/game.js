@@ -20,6 +20,7 @@ Game.prototype.update = function(data) {
         this.players[i].update(data.players[i]);
     }
 
+    this.activePlayer = data.activePlayer;
     this.map = data.map;
     this.started = data.started;
     this.timestamp = new Date();
@@ -27,6 +28,10 @@ Game.prototype.update = function(data) {
 
 Game.prototype.updateTimestapm = function() {
     this.timestamp = new Date();
+};
+
+Game.prototype.endTurn = function() {
+    this.activePlayer = this.activePlayer < this.players.length - 1 ? this.activePlayer + 1 : 0;
 };
 
 Game.prototype.join = function(userName) {

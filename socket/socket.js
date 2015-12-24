@@ -76,6 +76,7 @@ module.exports = function(io, gameServer) {
 
                     game.playerReveal(parseInt(data.x, 10), parseInt(data.y, 10));
                     oPlayer.move -= parseInt(data.spentPoints, 10);
+                    gameServer.saveGame(socket.game_number);
 
                     socket.broadcast.to(socket.game_number).emit('mapupdate', JSON.stringify(game.map));
                     socket.emit('mapupdate', JSON.stringify(game.map));
@@ -104,6 +105,16 @@ module.exports = function(io, gameServer) {
 
             socket.on('load', function(data) {
                 gameServer.loadGame(socket.game_number, function(game) {
+                    socket.broadcast.to(socket.game_number).emit('gameupdate', JSON.stringify(game));
+                    socket.emit('gameupdate', JSON.stringify(game));
+                });
+            });
+
+            socket.on('endturn', function(data) {
+                gameServer.getGame(socket.game_number, function(game) {
+                    game.endTurn();
+                    gameServer.saveGame(socket.game_number);
+
                     socket.broadcast.to(socket.game_number).emit('gameupdate', JSON.stringify(game));
                     socket.emit('gameupdate', JSON.stringify(game));
                 });

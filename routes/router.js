@@ -10,7 +10,7 @@ function securePages(req, res, next){
     }
 }
 
-module.exports = function(passport, config, gameServer){
+module.exports = function(passport, config, gameServer) {
 
     /* GET login page. */
     router.get('/', function(req, res) {
@@ -70,7 +70,7 @@ module.exports = function(passport, config, gameServer){
     });
 
     return router;
-}
+};
 
 
 

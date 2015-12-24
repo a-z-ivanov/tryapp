@@ -23,10 +23,11 @@ var Map = (function() {
             "Marked": 3
         };
 
-    function Map(aImages, iActivePlayerIndex) {
+    function Map(aImages, iPlayerPos, bPlayersTurn) {
         this.aImages = aImages;
-        this.iActivePlayerIndex = iActivePlayerIndex;
-        this.activePlayerMarked = false;
+        this.iPlayerPos = iPlayerPos;
+        this.bPlayerMarked = false;
+        this.bPlayersTurn = bPlayersTurn;
 
         this.$mapContainer = $('.mapcontainer');
         this.canvas = document.getElementById('hexmap');
@@ -47,8 +48,9 @@ var Map = (function() {
         drawPlayers.call(this);
     };
 
-    Map.prototype.update = function(data) {
+    Map.prototype.update = function(data, bPlayersTurn) {
         this.oMapData = data;
+        this.bPlayersTurn = bPlayersTurn;
 
         initRevealedCenters.call(this);
         initAllSquares.call(this);
@@ -79,9 +81,9 @@ var Map = (function() {
         return this.aRevealedSquares.indexOf(x.toString() + "_" + y.toString()) !== -1;
     };
 
-    Map.prototype.isActivePlayer = function(x, y) {
-        return this.oMapData.players[this.iActivePlayerIndex].square.x === x
-                && this.oMapData.players[this.iActivePlayerIndex].square.y === y;
+    Map.prototype.isCurrentPlayer = function(x, y) {
+        return this.oMapData.players[this.iPlayerPos].square.x === x
+                && this.oMapData.players[this.iPlayerPos].square.y === y;
     };
 
     Map.prototype.isSquareNextToSqaure = function(x1, y1, x2, y2) {
@@ -89,10 +91,10 @@ var Map = (function() {
         return aSquares.indexOf(x2.toString() + "_" + y2.toString()) !== -1;
     };
 
-    Map.prototype.isSquareNextToActivePlayer = function(x, y) {
+    Map.prototype.isSquareNextToCurrentPlayer = function(x, y) {
         return this.isSquareNextToSqaure(
-            this.oMapData.players[this.iActivePlayerIndex].square.x,
-            this.oMapData.players[this.iActivePlayerIndex].square.y,
+            this.oMapData.players[this.iPlayerPos].square.x,
+            this.oMapData.players[this.iPlayerPos].square.y,
             x,
             y
         );
@@ -398,21 +400,22 @@ var Map = (function() {
         //alert(hexX + " " + hexY);
 
         // Check if the mouse's coords are on the board
-        if (hexX >= 0 && hexX < boardWidth && hexY >= 0 && hexY < boardHeight) {
+        // and if this is the current player's turn
+        if (this.bPlayersTurn && hexX >= 0 && hexX < boardWidth && hexY >= 0 && hexY < boardHeight) {
             this.drawAll();
 
-            if (this.isActivePlayer(hexX, hexY)) {
-                this.activePlayerMarked = !this.activePlayerMarked;
+            if (this.isCurrentPlayer(hexX, hexY)) {
+                this.bPlayerMarked = !this.bPlayerMarked;
 
-                if (this.activePlayerMarked) {
+                if (this.bPlayerMarked) {
                     strokeStyle = StrokeStyle.ActivePlayerMarked;
                 }
             }
 
             drawHexagon.call(this, screenX, screenY, strokeStyle, LineWidth.Marked);
 
-            if (!this.isActivePlayer(hexX, hexY)) {
-                if (this.activePlayerMarked && this.isSquareNextToActivePlayer(hexX, hexY)) {
+            if (!this.isCurrentPlayer(hexX, hexY)) {
+                if (this.bPlayerMarked && this.isSquareNextToCurrentPlayer(hexX, hexY)) {
                     if (!this.isOutside(hexX, hexY) && !this.isRevealed(hexX, hexY)) {
                         var center = this.getCenterFromSquare(hexX, hexY);
                         this.$mapContainer.trigger("requestreveal", {
@@ -429,7 +432,7 @@ var Map = (function() {
                     }
                 }
 
-                this.activePlayerMarked = false;
+                this.bPlayerMarked = false;
             }
         }
     }
@@ -516,7 +519,7 @@ var Map = (function() {
                 sideLength
             );
 
-            if (i === this.iActivePlayerIndex) {
+            if (i === this.iPlayerPos) {
                 var x = this.oMapData.players[i].square.x,
                     y = this.oMapData.players[i].square.y,
                     screenX = x * hexRectangleWidth + ((y % 2) * hexRadius),

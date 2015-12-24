@@ -25,9 +25,9 @@
         </main>
 
         <aside>
-            <input id="inputP1" value="0"/>
-            <input id="inputP2" value="0"/>
-            <button id="btnDo">Play Cards</button>
+            <!--<input id="inputP1" value="0"/>-->
+            <!--<input id="inputP2" value="0"/>-->
+            <button id="btnDo">End turn</button>
             <button id="btnSave">Save</button>
             <button id="btnLoad">Load</button>
         </aside>
@@ -80,7 +80,7 @@
                 console.log('player_pos: ' + playerPos);
                 console.log('user.username: ' + username);
 
-                map = new Map(aImages, playerPos);
+                map = new Map(aImages, playerPos, isActivePlayer());
                 map.scrollTo(playerX, playerY);
 
                 //socket.io
@@ -112,6 +112,8 @@
                 socket.on("gameupdate", function(data) {
                     var game = JSON.parse(data);
 
+                    activePlayerPos = game.activePlayer;
+
                     updateMap(game.map);
                     updatePlayer(game.players[playerPos]);
                     updatePlayArea(game.players[game.activePlayer].playedCards);
@@ -123,7 +125,7 @@
                 });
 
                 function updateMap(oMapData) {
-                    map.update(oMapData);
+                    map.update(oMapData, isActivePlayer());
                     map.drawAll();
                 }
 
@@ -155,44 +157,69 @@
                     }
                 }
 
+                function isActivePlayer() {
+                    return activePlayerPos === playerPos;
+                }
+
                 jQuery('#loading').hide();
 
                 //interactions
-//                jQuery(document).on('click', '#btnDo', function(e) {
+                jQuery(document).on('click', '#btnDo', function(e) {
 //                    var p1 = $('#inputP1').val(),
 //                        p2 = $('#inputP2').val();
-//
+
 //                    socket.emit('playcard', { cards: [ p1 ] });
-//                });
+                    if (isActivePlayer()) {
+                        socket.emit('endturn');
+                    }
+                });
 
                 jQuery(document).on('click', '#btnSave', function(e) {
-                    socket.emit('save');
+                    if (isActivePlayer()) {
+                        socket.emit('save');
+                    }
                 });
 
                 jQuery(document).on('click', '#btnLoad', function(e) {
-                    socket.emit('load');
+                    if (isActivePlayer()) {
+                        socket.emit('load');
+                    }
                 });
 
                 jQuery('.mapcontainer').on("requestmove", function(event, params) {
-                    if (params.pointsNeeded <= oPlayer.move) {
-                        socket.emit('move', { x: params.x, y: params.y, spentPoints: params.pointsNeeded });
-                    } else {
-                        alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
+                    if (isActivePlayer()) {
+                        if (params.pointsNeeded <= oPlayer.move) {
+                            socket.emit('move', {
+                                x: params.x,
+                                y: params.y,
+                                spentPoints: params.pointsNeeded
+                            });
+                        } else {
+                            alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
+                        }
                     }
                 });
 
                 jQuery('.mapcontainer').on("requestreveal", function(event, params) {
-                    if (params.pointsNeeded <= oPlayer.move) {
-                        socket.emit('reveal', { x: params.x, y: params.y, spentPoints: params.pointsNeeded });
-                    } else {
-                        alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
+                    if (isActivePlayer()) {
+                        if (params.pointsNeeded <= oPlayer.move) {
+                            socket.emit('reveal', {
+                                x: params.x,
+                                y: params.y,
+                                spentPoints: params.pointsNeeded
+                            });
+                        } else {
+                            alert("You need " + params.pointsNeeded + " move points, but you only have " + oPlayer.move + "!");
+                        }
                     }
                 });
 
                 jQuery('.hand').on('dblclick', function(event) {
-                    if (event.target.tagName === "IMG") {
-                        var sCardId = jQuery(event.target).data("card");
-                        socket.emit('playcard', { cards: [ sCardId ] });
+                    if (isActivePlayer()) {
+                        if (event.target.tagName === "IMG") {
+                            var sCardId = jQuery(event.target).data("card");
+                            socket.emit('playcard', {cards: [sCardId]});
+                        }
                     }
                 });
             }
