@@ -251,6 +251,186 @@
       { "xOffset": 1, "yOffset": -1, "terrain": "forest" },
       { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
       { "xOffset": 1, "yOffset": 1, "terrain": "plain" }
+    ],
+    "3": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "plain" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "hill" }
+    ],
+    "4": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "desert" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "desert" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "desert" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "mountain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "plain" }
+    ],
+    "5": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "forest" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "water" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "hill" }
+    ],
+    "6": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "mountain" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "forest" }
+    ],
+    "7": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "water" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "swamp" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "plain" }
+    ],
+    "8": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "swamp" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "swamp" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "swamp" }
+    ],
+    "9": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "wasteland" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "wasteland" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "mountain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "mountain" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "plain" }
+    ],
+    "10": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "mountain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "hill" }
+    ],
+    "11": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "water" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "water" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "water" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "hill" }
+    ],
+    "12": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "mountain" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "swamp" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "mountain" }
+    ],
+    "13": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "swamp" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "water" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "forest" }
+    ],
+    "14": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "desert" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "desert" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "plain" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "hill" }
+    ],
+    "15": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "mountain" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "desert" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "desert" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "desert" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "desert" }
+    ],
+    "16": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "water" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "swamp" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "water" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "swamp" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "swamp" }
+    ],
+    "17": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "mountain" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "wasteland" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "wasteland" }
+    ],
+    "18": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "wasteland" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "mountain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "wasteland" }
+    ],
+    "19": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "water" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "forest" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "swamp" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "swamp" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "swamp" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "swamp" }
+    ],
+    "20": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "forest" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "mountain" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "hill" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "water" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "water" }
+    ],
+    "21": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "wasteland" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "water" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "plain" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "forest" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "water" }
+    ],
+    "22": [
+      { "xOffset": 0, "yOffset": -1, "terrain": "desert" },
+      { "xOffset": -1, "yOffset": 0, "terrain": "wasteland" },
+      { "xOffset": 0, "yOffset": 1, "terrain": "wasteland" },
+      { "xOffset": 0, "yOffset": 0, "terrain": "desert" },
+      { "xOffset": 1, "yOffset": -1, "terrain": "hill" },
+      { "xOffset": 1, "yOffset": 0, "terrain": "desert" },
+      { "xOffset": 1, "yOffset": 1, "terrain": "desert" }
     ]
   },
   "objects": {
@@ -267,11 +447,47 @@
       { "xOffset": 0, "yOffset": 1, "objectType": "green crystal mine" },
       { "xOffset": 1, "yOffset": 0, "objectType": "village" },
       { "xOffset": 1, "yOffset": -1, "objectType": "magical glade" }
+    ],
+    "3": [
+    ],
+    "4": [
+    ],
+    "5": [
+    ],
+    "6": [
+    ],
+    "7": [
+    ],
+    "8": [
+    ],
+    "9": [
+    ],
+    "10": [
+    ],
+    "11": [
+    ],
+    "12": [
+    ],
+    "13": [
+    ],
+    "14": [
+    ],
+    "15": [
+    ],
+    "16": [
+    ],
+    "17": [
+    ],
+    "18": [
+    ],
+    "19": [
+    ],
+    "20": [
+    ],
+    "21": [
+    ],
+    "22": [
     ]
   },
   "players":[]
 }
-
-
-
-

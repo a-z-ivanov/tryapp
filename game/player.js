@@ -1,11 +1,23 @@
 module.exports = Player;
 
-function Player(user, position) {
+function Player(user, position, hero) {
     this.user = user;
     this.position = position;
-    this.deck = [];
-    this.hand = ["3", "1", "4", "4", "4", "4", "4", "4", "4", "4", "6", "7"];
+    this.hero = hero;
+    this.deck = [
+        "1",
+        this.hero === "arythea" ? "16" : "1",
+        this.hero === "tovak" ? "13" : "2",
+        "3", "3", "4", "4", "5", "5", "6",
+        this.hero === "norowas" ? "15" : "7",
+        "8", "9", "10",
+        this.hero === "goldyx" ? "14" : "11",
+        "12"
+    ];
+    this.hand = [];
+    this.handLimit = 5;
     this.playedCards = [];
+    this.discardPile = [];
     this.influence = 0;
     this.move = 0;
     this.meleeAttack = 0;
@@ -41,15 +53,53 @@ Player.Actions = {
 Player.prototype.update = function(data) {
     this.deck = data.deck;
     this.hand = data.hand;
+    this.handLimit = data.handLimit;
+    this.user = data.user;
+    this.position = data.position;
+    this.hero = data.hero;
     this.playedCards = data.playedCards;
+    this.discardPile = data.discardPile;
     this.influence = data.influence;
     this.move = data.move;
     this.meleeAttack = data.meleeAttack;
     this.rangedAttack = data.rangedAttack;
     this.siegeAttack = data.siegeAttack;
-    this.block = 0;
+    this.block = data.block;
     this.mana = data.mana;
     this.crystals = data.crystals;
+};
+
+Player.prototype.drawHand = function() {
+    var aNewCards = this.deck.splice(0, this.handLimit - this.hand.length);
+    this.hand = Array.prototype.concat(this.hand, aNewCards);
+};
+
+Player.prototype.endTurn = function() {
+    this.resetPoints();
+    this.discardPlayedCards();
+    this.drawHand();
+};
+
+Player.prototype.discardPlayedCards = function() {
+    this.discardPile = Array.prototype.concat(this.discardPile, this.playedCards);
+    this.playedCards = [];
+};
+
+Player.prototype.resetPoints = function() {
+    this.influence = 0;
+    this.move = 0;
+    this.meleeAttack = 0;
+    this.rangedAttack = 0;
+    this.siegeAttack = 0;
+    this.block = 0;
+    this.mana = {
+        "white": 0,
+        "red": 0,
+        "green": 0,
+        "blue": 0,
+        "sun": 0,
+        "night": 0
+    };
 };
 
 //pays the price of one crystal

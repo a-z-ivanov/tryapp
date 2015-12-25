@@ -1,9 +1,15 @@
 var initialMap = require('../models/map1.json');
 var Player = require('./player.js');
+var shuffle = require('./shuffle.js');
 
 module.exports = Game;
 
 function Game(gameNumber, requiredPlayers) {
+    this.heroes = ["goldyx", "norowas", "towak", "arythea"];
+
+    this.tilesLeft = [];
+    this.initTilesLeft(requiredPlayers);
+
     this.timestamp = new Date();
     this.game_number = gameNumber;
     this.requiredPlayers = requiredPlayers;
@@ -14,12 +20,14 @@ function Game(gameNumber, requiredPlayers) {
 }
 
 Game.prototype.update = function(data) {
+    this.heroes = data.heroes;
     this.players = [];
     for (var i = 0; i < data.players.length; i++ ) {
-        this.players.push(new Player(data.players[i].user, data.players[i].position));
+        this.players.push(new Player(data.players[i].user, data.players[i].position, data.heroes[i]));
         this.players[i].update(data.players[i]);
     }
 
+    this.tilesLeft = data.tilesLeft;
     this.activePlayer = data.activePlayer;
     this.map = data.map;
     this.started = data.started;
@@ -30,13 +38,53 @@ Game.prototype.updateTimestapm = function() {
     this.timestamp = new Date();
 };
 
+Game.prototype.initTilesLeft = function(iPlayersCount) {
+    var countryTilesCount = 8,
+        nonCityTilesCount = 2,
+        cityTilesCount = 1,
+        coreNonCityTiles = [15, 16, 17, 18],
+        coreCityTiles = [19, 20, 21, 22],
+        randomIndex,
+        i;
+    //arrange tiles
+    if (this.requiredPlayers === 3) {
+        countryTilesCount = 9;
+    } else if (this.requiredPlayers === 4) {
+        countryTilesCount = 11;
+    }
+
+    for (i = 3; i <= countryTilesCount; i++) {
+        this.tilesLeft.push(i);
+    }
+
+    var coreTiles = [];
+
+    for (i = 0; i < nonCityTilesCount; i++) {
+        randomIndex = Math.floor(Math.random() * coreNonCityTiles.length);
+        var tileID = coreNonCityTiles.splice(randomIndex, 1)[0];
+        coreTiles.push(tileID);
+    }
+
+    for (i = 0; i < cityTilesCount; i++) {
+        randomIndex = Math.floor(Math.random() * coreCityTiles.length);
+        var tileID = coreCityTiles.splice(randomIndex, 1)[0];
+        coreTiles.push(tileID);
+    }
+
+    shuffle(coreTiles);
+    this.tilesLeft = Array.prototype.concat(this.tilesLeft, coreTiles);
+};
+
 Game.prototype.endTurn = function() {
+    this.players[this.activePlayer].endTurn();
     this.activePlayer = this.activePlayer < this.players.length - 1 ? this.activePlayer + 1 : 0;
 };
 
 Game.prototype.join = function(userName) {
     if (this.players.length < this.requiredPlayers) {
-        this.players.push(new Player(userName, this.players.length));
+        this.players.push(new Player(userName, this.players.length, this.heroes[this.players.length]));
+        shuffle(this.players[this.players.length - 1].deck);
+        this.players[this.players.length - 1].drawHand();
         this.map.players.push({ square: { x: 6, y: 28}});
         return true;
     }
@@ -64,7 +112,8 @@ Game.prototype.playerMove = function(iPlayerPos, x, y) {
 Game.prototype.playerReveal = function(centerX, centerY) {
     for (var i = 0; i < this.map.centers.length; i++) {
         if (centerX === this.map.centers[i].x && centerY === this.map.centers[i].y) {
-            this.map.centers[i].tile = 2; //get a new tile
+            var tileId = this.tilesLeft.splice(0, 1)[0];
+            this.map.centers[i].tile = tileId; //get a new tile
             break;
         }
     }

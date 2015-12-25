@@ -124,6 +124,10 @@
                     updatePlayArea(cards);
                 });
 
+                socket.on("message", function(data) {
+                    alert(data);
+                });
+
                 function updateMap(oMapData) {
                     map.update(oMapData, isActivePlayer());
                     map.drawAll();

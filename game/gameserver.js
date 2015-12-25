@@ -1,5 +1,6 @@
 var Game = require('./game.js');
 var GameModel = require('../models/gamemodel.js');
+var shuffle = require('./shuffle.js');
 
 module.exports = GameServer;
 
@@ -37,6 +38,7 @@ GameServer.prototype.newGame = function(userName, callback) {
     GameModel.find({}).sort('-gamenumber').exec(function(err, games) {
         var iNextGameNumber = games.length ? games[0].gamenumber + 1 : 0;
         var newGame = new Game(iNextGameNumber, GameServer.Default_Required_Players);
+        shuffle(newGame.heroes);
         newGame.join(userName);
         this.games.push(newGame);
 
