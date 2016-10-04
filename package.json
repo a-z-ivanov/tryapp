@@ -29,6 +29,7 @@
     "hogan-express": "*",
     "mongoose": "~3.8.12",
     "morgan": "~1.0.0",
+    "newrelic": "^1.30.5",
     "passport": "~0.2.0",
     "passport-local": "~1.0.0",
     "session-mongoose": "^0.5.2",
